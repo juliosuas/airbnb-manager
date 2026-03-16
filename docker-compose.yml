@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend/db:/app/db
+      - ./frontend:/app/../frontend
+    environment:
+      - PORT=3001
+      - DB_PATH=/app/db/airbnb.db
+    restart: unless-stopped
+
+  ai-bridge:
+    build: ./ai
+    ports:
+      - "5001:5001"
+    environment:
+      - BRIDGE_PORT=5001
+    restart: unless-stopped

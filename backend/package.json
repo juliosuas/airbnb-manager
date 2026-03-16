@@ -1,0 +1,19 @@
+{
+  "name": "airbnb-manager-backend",
+  "version": "1.0.0",
+  "description": "Self-hosted Airbnb property management backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node db/seed.js",
+    "init-db": "node db/init.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "node-cron": "^3.0.3"
+  }
+}

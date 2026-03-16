@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Casa Sol — Airbnb Manager</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="logo">
+      <span class="logo-icon">🏠</span>
+      <span class="logo-text">Casa Sol</span>
+    </div>
+    <ul class="nav-links">
+      <li class="active" data-section="dashboard"><span class="nav-icon">📊</span> Dashboard</li>
+      <li data-section="calendar"><span class="nav-icon">📅</span> Calendar</li>
+      <li data-section="messages"><span class="nav-icon">💬</span> Messages <span class="badge" id="msg-badge"></span></li>
+      <li data-section="reservations"><span class="nav-icon">📋</span> Reservations</li>
+      <li data-section="pricing"><span class="nav-icon">💰</span> Pricing</li>
+      <li data-section="cleaning"><span class="nav-icon">🧹</span> Cleaning</li>
+      <li data-section="reviews"><span class="nav-icon">⭐</span> Reviews</li>
+    </ul>
+    <div class="sidebar-footer">
+      <div class="status-dot online"></div>
+      <span>System Online</span>
+    </div>
+  </nav>
+
+  <main class="content">
+    <!-- Dashboard -->
+    <section id="dashboard" class="section active">
+      <h1>Dashboard</h1>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-occupancy">—</div>
+          <div class="stat-label">Occupancy Rate</div>
+        </div>
+        <div class="stat-card revenue">
+          <div class="stat-value" id="stat-revenue">—</div>
+          <div class="stat-label">Revenue This Month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-rating">—</div>
+          <div class="stat-label">Avg Rating</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-pending">—</div>
+          <div class="stat-label">Pending Messages</div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="card">
+          <h2>Property Overview</h2>
+          <div id="property-info">Loading...</div>
+        </div>
+        <div class="card">
+          <h2>Upcoming Check-ins</h2>
+          <div id="upcoming-checkins">Loading...</div>
+        </div>
+        <div class="card">
+          <h2>Recent Messages</h2>
+          <div id="recent-messages">Loading...</div>
+        </div>
+        <div class="card">
+          <h2>Cleaning Schedule</h2>
+          <div id="cleaning-overview">Loading...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Calendar -->
+    <section id="calendar" class="section">
+      <h1>Calendar</h1>
+      <div class="calendar-controls">
+        <button id="cal-prev" class="btn">← Prev</button>
+        <span id="cal-month-label" class="cal-label"></span>
+        <button id="cal-next" class="btn">Next →</button>
+      </div>
+      <div class="calendar-grid" id="calendar-grid"></div>
+      <div class="calendar-legend">
+        <span><span class="legend-dot booked"></span> Booked</span>
+        <span><span class="legend-dot available"></span> Available</span>
+        <span><span class="legend-dot today"></span> Today</span>
+      </div>
+    </section>
+
+    <!-- Messages -->
+    <section id="messages" class="section">
+      <h1>Guest Messages</h1>
+      <div class="messages-layout">
+        <div class="conversations-list" id="conversations-list"></div>
+        <div class="chat-panel">
+          <div class="chat-header" id="chat-header">Select a conversation</div>
+          <div class="chat-messages" id="chat-messages"></div>
+          <div class="chat-input-area" id="chat-input-area" style="display:none">
+            <div class="ai-suggestions" id="ai-suggestions"></div>
+            <div class="chat-input-row">
+              <input type="text" id="chat-input" placeholder="Type a message...">
+              <button id="chat-send" class="btn btn-primary">Send</button>
+              <button id="chat-ai" class="btn btn-ai" title="AI Suggest">🤖</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reservations -->
+    <section id="reservations" class="section">
+      <h1>Reservations</h1>
+      <div class="filter-bar">
+        <button class="btn filter-btn active" data-filter="all">All</button>
+        <button class="btn filter-btn" data-filter="confirmed">Confirmed</button>
+        <button class="btn filter-btn" data-filter="pending">Pending</button>
+        <button class="btn filter-btn" data-filter="completed">Completed</button>
+      </div>
+      <div class="table-container">
+        <table class="data-table" id="reservations-table">
+          <thead>
+            <tr>
+              <th>Guest</th>
+              <th>Check-in</th>
+              <th>Check-out</th>
+              <th>Guests</th>
+              <th>Total</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="section">
+      <h1>Pricing Control</h1>
+      <div class="pricing-layout">
+        <div class="card">
+          <h2>Update Pricing</h2>
+          <form id="pricing-form">
+            <div class="form-group">
+              <label>Start Date</label>
+              <input type="date" id="price-start" required>
+            </div>
+            <div class="form-group">
+              <label>End Date</label>
+              <input type="date" id="price-end" required>
+            </div>
+            <div class="form-group">
+              <label>Price per Night (MXN)</label>
+              <input type="number" id="price-value" placeholder="1500">
+            </div>
+            <div class="form-group">
+              <label>Minimum Nights</label>
+              <input type="number" id="price-min-nights" placeholder="1">
+            </div>
+            <button type="submit" class="btn btn-primary">Update Pricing</button>
+          </form>
+          <div id="pricing-result" class="mt-1"></div>
+        </div>
+        <div class="card">
+          <h2>Price Calculator</h2>
+          <form id="calc-form">
+            <div class="form-group">
+              <label>Check-in</label>
+              <input type="date" id="calc-start" required>
+            </div>
+            <div class="form-group">
+              <label>Check-out</label>
+              <input type="date" id="calc-end" required>
+            </div>
+            <button type="submit" class="btn">Calculate</button>
+          </form>
+          <div id="calc-result" class="mt-1"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cleaning -->
+    <section id="cleaning" class="section">
+      <h1>Cleaning Schedule</h1>
+      <div class="table-container">
+        <table class="data-table" id="cleaning-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Guest</th>
+              <th>Check-out</th>
+              <th>Status</th>
+              <th>Notes</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Reviews -->
+    <section id="reviews" class="section">
+      <h1>Reviews</h1>
+      <div id="reviews-list" class="reviews-list"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
