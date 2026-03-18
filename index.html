@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Casa Sol — Airbnb Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Mobile overlay -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect width="28" height="28" rx="8" fill="var(--accent)"/>
+          <path d="M14 6L20 10V18L14 22L8 18V10L14 6Z" fill="white" opacity="0.9"/>
+          <path d="M14 10L17 12V16L14 18L11 16V12L14 10Z" fill="var(--accent)"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <span class="logo-name">Casa Sol</span>
+        <span class="logo-sub">Property Manager</span>
+      </div>
+    </div>
+
+    <ul class="nav-links">
+      <li class="active" data-section="dashboard">
+        <i data-lucide="layout-dashboard"></i>
+        <span class="nav-label">Dashboard</span>
+      </li>
+      <li data-section="calendar">
+        <i data-lucide="calendar-days"></i>
+        <span class="nav-label">Calendar</span>
+      </li>
+      <li data-section="messages">
+        <i data-lucide="message-circle"></i>
+        <span class="nav-label">Messages</span>
+        <span class="badge" id="msg-badge"></span>
+      </li>
+      <li data-section="reservations">
+        <i data-lucide="book-open"></i>
+        <span class="nav-label">Reservations</span>
+      </li>
+      <li data-section="pricing">
+        <i data-lucide="tag"></i>
+        <span class="nav-label">Pricing</span>
+      </li>
+      <li data-section="cleaning">
+        <i data-lucide="sparkles"></i>
+        <span class="nav-label">Cleaning</span>
+      </li>
+      <li data-section="reviews">
+        <i data-lucide="star"></i>
+        <span class="nav-label">Reviews</span>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+        <i data-lucide="sun" class="theme-icon-light"></i>
+        <i data-lucide="moon" class="theme-icon-dark"></i>
+      </button>
+      <div class="system-status">
+        <div class="status-dot online"></div>
+        <span>Online</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile header -->
+  <header class="mobile-header">
+    <button class="hamburger" id="hamburger">
+      <i data-lucide="menu"></i>
+    </button>
+    <span class="mobile-title">Casa Sol</span>
+    <button class="theme-toggle mobile-theme" id="theme-toggle-mobile" title="Toggle theme">
+      <i data-lucide="sun" class="theme-icon-light"></i>
+      <i data-lucide="moon" class="theme-icon-dark"></i>
+    </button>
+  </header>
+
+  <main class="content">
+    <!-- Dashboard -->
+    <section id="dashboard" class="section active">
+      <div class="section-header">
+        <div>
+          <h1>Dashboard</h1>
+          <p class="section-subtitle">Welcome back — here's your property overview</p>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card stat-occupancy">
+          <div class="stat-icon"><i data-lucide="trending-up"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-occupancy"><div class="skeleton skeleton-text" style="width:60px"></div></div>
+            <div class="stat-label">Occupancy Rate</div>
+          </div>
+        </div>
+        <div class="stat-card stat-revenue">
+          <div class="stat-icon"><i data-lucide="dollar-sign"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-revenue"><div class="skeleton skeleton-text" style="width:100px"></div></div>
+            <div class="stat-label">Revenue This Month</div>
+          </div>
+        </div>
+        <div class="stat-card stat-rating">
+          <div class="stat-icon"><i data-lucide="star"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-rating"><div class="skeleton skeleton-text" style="width:50px"></div></div>
+            <div class="stat-label">Avg Rating</div>
+          </div>
+        </div>
+        <div class="stat-card stat-messages">
+          <div class="stat-icon"><i data-lucide="message-circle"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-pending"><div class="skeleton skeleton-text" style="width:30px"></div></div>
+            <div class="stat-label">Pending Messages</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="card">
+          <div class="card-header">
+            <h2><i data-lucide="home"></i> Property Overview</h2>
+          </div>
+          <div class="card-body" id="property-info">
+            <div class="skeleton-group">
+              <div class="skeleton skeleton-text"></div>
+              <div class="skeleton skeleton-text" style="width:80%"></div>
+              <div class="skeleton skeleton-text" style="width:60%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h2><i data-lucide="log-in"></i> Upcoming Check-ins</h2>
+          </div>
+          <div class="card-body" id="upcoming-checkins">
+            <div class="skeleton-group">
+              <div class="skeleton skeleton-text"></div>
+              <div class="skeleton skeleton-text" style="width:70%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h2><i data-lucide="mail"></i> Recent Messages</h2>
+          </div>
+          <div class="card-body" id="recent-messages">
+            <div class="skeleton-group">
+              <div class="skeleton skeleton-text"></div>
+              <div class="skeleton skeleton-text" style="width:75%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h2><i data-lucide="sparkles"></i> Cleaning Schedule</h2>
+          </div>
+          <div class="card-body" id="cleaning-overview">
+            <div class="skeleton-group">
+              <div class="skeleton skeleton-text"></div>
+              <div class="skeleton skeleton-text" style="width:65%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Calendar -->
+    <section id="calendar" class="section">
+      <div class="section-header">
+        <div>
+          <h1>Calendar</h1>
+          <p class="section-subtitle">Manage your availability and bookings</p>
+        </div>
+      </div>
+      <div class="calendar-controls">
+        <button id="cal-prev" class="btn btn-icon" aria-label="Previous month">
+          <i data-lucide="chevron-left"></i>
+        </button>
+        <span id="cal-month-label" class="cal-label"></span>
+        <button id="cal-next" class="btn btn-icon" aria-label="Next month">
+          <i data-lucide="chevron-right"></i>
+        </button>
+      </div>
+      <div class="card calendar-card">
+        <div class="calendar-grid" id="calendar-grid"></div>
+      </div>
+      <div class="calendar-legend">
+        <span class="legend-item"><span class="legend-dot booked"></span> Booked</span>
+        <span class="legend-item"><span class="legend-dot available"></span> Available</span>
+        <span class="legend-item"><span class="legend-dot today"></span> Today</span>
+      </div>
+    </section>
+
+    <!-- Messages -->
+    <section id="messages" class="section">
+      <div class="section-header">
+        <div>
+          <h1>Guest Messages</h1>
+          <p class="section-subtitle">Communicate with your guests</p>
+        </div>
+      </div>
+      <div class="messages-layout">
+        <div class="conversations-list" id="conversations-list">
+          <div class="conversations-header">
+            <i data-lucide="inbox"></i>
+            <span>Conversations</span>
+          </div>
+        </div>
+        <div class="chat-panel">
+          <div class="chat-header" id="chat-header">
+            <div class="chat-header-empty">
+              <i data-lucide="message-circle"></i>
+              <span>Select a conversation</span>
+            </div>
+          </div>
+          <div class="chat-messages" id="chat-messages">
+            <div class="empty-state">
+              <i data-lucide="messages-square" style="width:48px;height:48px;opacity:0.3"></i>
+              <p>Select a conversation to start messaging</p>
+            </div>
+          </div>
+          <div class="chat-input-area" id="chat-input-area" style="display:none">
+            <div class="ai-suggestions" id="ai-suggestions"></div>
+            <div class="chat-input-row">
+              <input type="text" id="chat-input" placeholder="Type a message...">
+              <button id="chat-send" class="btn btn-primary btn-send" title="Send">
+                <i data-lucide="send"></i>
+              </button>
+              <button id="chat-ai" class="btn btn-ai" title="AI Suggest">
+                <i data-lucide="bot"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reservations -->
+    <section id="reservations" class="section">
+      <div class="section-header">
+        <div>
+          <h1>Reservations</h1>
+          <p class="section-subtitle">Track and manage all bookings</p>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <button class="btn filter-btn active" data-filter="all">All</button>
+        <button class="btn filter-btn" data-filter="confirmed">Confirmed</button>
+        <button class="btn filter-btn" data-filter="pending">Pending</button>
+        <button class="btn filter-btn" data-filter="completed">Completed</button>
+      </div>
+      <div class="card table-card">
+        <div class="table-container">
+          <table class="data-table" id="reservations-table">
+            <thead>
+              <tr>
+                <th>Guest</th>
+                <th>Check-in</th>
+                <th>Check-out</th>
+                <th>Guests</th>
+                <th>Total</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="section">
+      <div class="section-header">
+        <div>
+          <h1>Pricing Control</h1>
+          <p class="section-subtitle">Set rates and calculate quotes</p>
+        </div>
+      </div>
+      <div class="pricing-layout">
+        <div class="card">
+          <div class="card-header">
+            <h2><i data-lucide="settings"></i> Update Pricing</h2>
+          </div>
+          <div class="card-body">
+            <form id="pricing-form">
+              <div class="form-group">
+                <label>Start Date</label>
+                <input type="date" id="price-start" required>
+              </div>
+              <div class="form-group">
+                <label>End Date</label>
+                <input type="date" id="price-end" required>
+              </div>
+              <div class="form-group">
+                <label>Price per Night (MXN)</label>
+                <input type="number" id="price-value" placeholder="1500">
+              </div>
+              <div class="form-group">
+                <label>Minimum Nights</label>
+                <input type="number" id="price-min-nights" placeholder="1">
+              </div>
+              <button type="submit" class="btn btn-primary btn-full">Update Pricing</button>
+            </form>
+            <div id="pricing-result" class="mt-1"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h2><i data-lucide="calculator"></i> Price Calculator</h2>
+          </div>
+          <div class="card-body">
+            <form id="calc-form">
+              <div class="form-group">
+                <label>Check-in</label>
+                <input type="date" id="calc-start" required>
+              </div>
+              <div class="form-group">
+                <label>Check-out</label>
+                <input type="date" id="calc-end" required>
+              </div>
+              <button type="submit" class="btn btn-full">Calculate</button>
+            </form>
+            <div id="calc-result" class="mt-1"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cleaning -->
+    <section id="cleaning" class="section">
+      <div class="section-header">
+        <div>
+          <h1>Cleaning Schedule</h1>
+          <p class="section-subtitle">Manage turnover cleaning tasks</p>
+        </div>
+      </div>
+      <div class="card table-card">
+        <div class="table-container">
+          <table class="data-table" id="cleaning-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Guest</th>
+                <th>Check-out</th>
+                <th>Status</th>
+                <th>Notes</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reviews -->
+    <section id="reviews" class="section">
+      <div class="section-header">
+        <div>
+          <h1>Reviews</h1>
+          <p class="section-subtitle">Guest feedback and ratings</p>
+        </div>
+      </div>
+      <div id="reviews-list" class="reviews-list"></div>
+    </section>
+  </main>
+
+  <script src="mock-data.js"></script>
+  <script src="api-mock.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
