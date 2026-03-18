@@ -7,6 +7,49 @@ let calendarYear = new Date().getFullYear();
 let selectedReservationId = null;
 let allReservations = [];
 
+// --- Init Lucide Icons ---
+document.addEventListener('DOMContentLoaded', () => {
+  lucide.createIcons();
+});
+
+// --- Theme Toggle ---
+function initTheme() {
+  const saved = localStorage.getItem('casa-sol-theme');
+  if (saved) {
+    document.documentElement.setAttribute('data-theme', saved);
+  } else {
+    // Default to light
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('casa-sol-theme', next);
+}
+
+initTheme();
+
+document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+document.getElementById('theme-toggle-mobile').addEventListener('click', toggleTheme);
+
+// --- Mobile Sidebar ---
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebar-overlay');
+const hamburger = document.getElementById('hamburger');
+
+hamburger.addEventListener('click', () => {
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('visible');
+});
+
+overlay.addEventListener('click', () => {
+  sidebar.classList.remove('open');
+  overlay.classList.remove('visible');
+});
+
 // --- Navigation ---
 document.querySelectorAll('.nav-links li').forEach(li => {
   li.addEventListener('click', () => {
@@ -17,6 +60,10 @@ document.querySelectorAll('.nav-links li').forEach(li => {
     document.getElementById(section).classList.add('active');
     currentSection = section;
     loadSection(section);
+
+    // Close mobile sidebar
+    sidebar.classList.remove('open');
+    overlay.classList.remove('visible');
   });
 });
 
@@ -32,6 +79,19 @@ async function api(endpoint, options = {}) {
     console.error('API Error:', e);
     return null;
   }
+}
+
+// --- Toast Notifications ---
+function showToast(message, type = 'success') {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  const icon = type === 'success' ? '✓' : '✕';
+  toast.innerHTML = `<span>${icon}</span> ${message}`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3200);
 }
 
 // --- Load Sections ---
@@ -58,10 +118,10 @@ async function loadDashboard() {
   ]);
 
   if (analytics) {
-    document.getElementById('stat-occupancy').textContent = `${analytics.occupancy_rate}%`;
-    document.getElementById('stat-revenue').textContent = `$${(analytics.monthly_revenue || 0).toLocaleString()} MXN`;
-    document.getElementById('stat-rating').textContent = `${analytics.average_rating} ⭐`;
-    document.getElementById('stat-pending').textContent = analytics.pending_messages;
+    animateValue('stat-occupancy', `${analytics.occupancy_rate}%`);
+    animateValue('stat-revenue', `$${(analytics.monthly_revenue || 0).toLocaleString()} MXN`);
+    animateValue('stat-rating', `${analytics.average_rating} ★`);
+    animateValue('stat-pending', analytics.pending_messages);
 
     const badge = document.getElementById('msg-badge');
     badge.textContent = analytics.pending_messages > 0 ? analytics.pending_messages : '';
@@ -86,7 +146,11 @@ async function loadDashboard() {
           <div class="item-sub">${formatDate(r.check_in)} → ${formatDate(r.check_out)} · ${r.guests_count} guests</div>
         </div>
       `).join('')
-      : '<div class="item-sub">No upcoming check-ins</div>';
+      : `<div class="empty-state-inline">
+          <i data-lucide="calendar-off"></i>
+          <p>No upcoming check-ins</p>
+        </div>`;
+    lucide.createIcons();
   }
 
   if (messages) {
@@ -98,7 +162,11 @@ async function loadDashboard() {
           <div class="item-sub">${m.content.substring(0, 80)}...</div>
         </div>
       `).join('')
-      : '<div class="item-sub">No unread messages</div>';
+      : `<div class="empty-state-inline">
+          <i data-lucide="mail-check"></i>
+          <p>No unread messages</p>
+        </div>`;
+    lucide.createIcons();
   }
 
   if (cleaning) {
@@ -110,8 +178,25 @@ async function loadDashboard() {
           <div class="item-sub">After ${t.guest_name}'s checkout</div>
         </div>
       `).join('')
-      : '<div class="item-sub">No pending tasks</div>';
+      : `<div class="empty-state-inline">
+          <i data-lucide="check-circle-2"></i>
+          <p>No pending tasks</p>
+        </div>`;
+    lucide.createIcons();
   }
+}
+
+// Animate stat value appearance
+function animateValue(id, value) {
+  const el = document.getElementById(id);
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(4px)';
+  el.textContent = value;
+  requestAnimationFrame(() => {
+    el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+    el.style.opacity = '1';
+    el.style.transform = 'translateY(0)';
+  });
 }
 
 // --- Calendar ---
@@ -152,7 +237,7 @@ async function loadCalendar() {
       <div class="${cls}">
         <div class="cal-day-num">${day}</div>
         ${cal ? `<div class="cal-day-price">$${cal.price}</div>` : ''}
-        ${isBooked ? '<div style="font-size:0.65rem;color:var(--accent-light)">Booked</div>' : ''}
+        ${isBooked ? '<div class="cal-day-booked-label">Booked</div>' : ''}
       </div>
     `;
   }
@@ -189,7 +274,23 @@ async function loadMessages() {
   });
 
   const list = document.getElementById('conversations-list');
-  list.innerHTML = Object.entries(convos).map(([resId, c]) => {
+  const headerHtml = `<div class="conversations-header">
+    <i data-lucide="inbox"></i>
+    <span>Conversations</span>
+  </div>`;
+
+  const convoEntries = Object.entries(convos);
+  if (convoEntries.length === 0) {
+    list.innerHTML = headerHtml + `
+      <div class="empty-state-inline" style="padding:32px">
+        <i data-lucide="message-circle-off"></i>
+        <p>No conversations yet</p>
+      </div>`;
+    lucide.createIcons();
+    return;
+  }
+
+  list.innerHTML = headerHtml + convoEntries.map(([resId, c]) => {
     const lastMsg = c.messages[0];
     return `
       <div class="convo-item ${c.hasUnread ? 'convo-unread' : ''}" data-res-id="${resId}">
@@ -198,6 +299,8 @@ async function loadMessages() {
       </div>
     `;
   }).join('');
+
+  lucide.createIcons();
 
   list.querySelectorAll('.convo-item').forEach(item => {
     item.addEventListener('click', () => openConversation(item.dataset.resId, convos));
@@ -211,7 +314,7 @@ function openConversation(resId, convos) {
   document.querySelectorAll('.convo-item').forEach(i => i.classList.remove('active'));
   document.querySelector(`.convo-item[data-res-id="${resId}"]`)?.classList.add('active');
 
-  document.getElementById('chat-header').textContent = convo.guest_name;
+  document.getElementById('chat-header').innerHTML = `<strong>${convo.guest_name}</strong>`;
   document.getElementById('chat-input-area').style.display = 'block';
   document.getElementById('ai-suggestions').innerHTML = '';
 
@@ -236,12 +339,22 @@ async function sendMessage() {
   if (!content || !selectedReservationId) return;
 
   input.value = '';
+
+  // Optimistic UI: show message immediately
+  const chat = document.getElementById('chat-messages');
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble msg-host';
+  bubble.innerHTML = `${content}<div class="msg-time">Just now</div>`;
+  chat.appendChild(bubble);
+  chat.scrollTop = chat.scrollHeight;
+
   const result = await api('/messages/send', {
     method: 'POST',
     body: JSON.stringify({ reservation_id: selectedReservationId, content }),
   });
 
   if (result) {
+    showToast('Message sent');
     loadMessages();
   }
 }
@@ -265,7 +378,7 @@ document.getElementById('chat-ai').addEventListener('click', async () => {
     const container = document.getElementById('ai-suggestions');
     container.innerHTML = result.suggestions.map(s => `
       <div class="ai-suggestion" data-content="${encodeURIComponent(s.response)}">
-        <div class="ai-suggestion-label">🤖 AI: ${s.templateKey}</div>
+        <div class="ai-suggestion-label">AI Suggestion · ${s.templateKey}</div>
         ${s.response.substring(0, 120)}...
       </div>
     `).join('');
@@ -278,6 +391,7 @@ document.getElementById('chat-ai').addEventListener('click', async () => {
           body: JSON.stringify({ reservation_id: selectedReservationId, content, use_ai: false }),
         });
         container.innerHTML = '';
+        showToast('AI suggestion sent');
         loadMessages();
       });
     });
@@ -291,9 +405,21 @@ async function loadReservations(filter = 'all') {
   allReservations = data || [];
 
   const tbody = document.querySelector('#reservations-table tbody');
+
+  if (allReservations.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6">
+      <div class="empty-state-inline" style="padding:32px">
+        <i data-lucide="calendar-x"></i>
+        <p>No reservations found</p>
+      </div>
+    </td></tr>`;
+    lucide.createIcons();
+    return;
+  }
+
   tbody.innerHTML = allReservations.map(r => `
     <tr>
-      <td><strong>${r.guest_name}</strong><br><span style="color:var(--text-dim);font-size:0.8rem">${r.guest_email}</span></td>
+      <td><strong>${r.guest_name}</strong><br><span style="color:var(--text-secondary);font-size:0.8rem">${r.guest_email}</span></td>
       <td>${formatDate(r.check_in)}</td>
       <td>${formatDate(r.check_out)}</td>
       <td>${r.guests_count}</td>
@@ -324,8 +450,10 @@ document.getElementById('pricing-form').addEventListener('submit', async (e) => 
     }),
   });
   document.getElementById('pricing-result').innerHTML = result
-    ? `<div style="color:var(--green)">Updated ${result.updated} days</div>`
-    : '<div style="color:var(--red)">Error updating pricing</div>';
+    ? `<div class="pricing-success">✓ Updated ${result.updated} days</div>`
+    : '<div class="pricing-error">Error updating pricing</div>';
+
+  if (result) showToast(`Pricing updated for ${result.updated} days`);
 });
 
 document.getElementById('calc-form').addEventListener('submit', async (e) => {
@@ -335,9 +463,9 @@ document.getElementById('calc-form').addEventListener('submit', async (e) => {
   const result = await api(`/pricing/calculate?start_date=${start}&end_date=${end}`);
   if (result) {
     document.getElementById('calc-result').innerHTML = `
-      <div style="padding:12px;background:var(--bg);border-radius:8px">
-        <div style="font-size:1.4rem;font-weight:700;color:var(--green)">$${result.total.toLocaleString()} ${result.currency}</div>
-        <div style="color:var(--text-dim);margin-top:4px">${result.nights} nights · Avg $${result.average}/night</div>
+      <div class="pricing-result-box">
+        <div class="pricing-result-total">$${result.total.toLocaleString()} ${result.currency}</div>
+        <div class="pricing-result-details">${result.nights} nights · Avg $${result.average}/night</div>
       </div>
     `;
   }
@@ -349,6 +477,18 @@ async function loadCleaning() {
   if (!tasks) return;
 
   const tbody = document.querySelector('#cleaning-table tbody');
+
+  if (tasks.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6">
+      <div class="empty-state-inline" style="padding:32px">
+        <i data-lucide="sparkles"></i>
+        <p>No cleaning tasks scheduled</p>
+      </div>
+    </td></tr>`;
+    lucide.createIcons();
+    return;
+  }
+
   tbody.innerHTML = tasks.map(t => `
     <tr>
       <td>${formatDate(t.scheduled_date)}</td>
@@ -357,7 +497,7 @@ async function loadCleaning() {
       <td><span class="status status-${t.status === 'completed' ? 'completed' : 'pending'}">${t.status}</span></td>
       <td>${t.cleaner_notes || '—'}</td>
       <td>
-        ${t.status !== 'completed' ? `<button class="btn btn-sm" onclick="markCleaned(${t.id})">Complete</button>` : '✓'}
+        ${t.status !== 'completed' ? `<button class="btn btn-sm btn-primary" onclick="markCleaned(${t.id})">Complete</button>` : '<span class="pricing-success">✓ Done</span>'}
       </td>
     </tr>
   `).join('');
@@ -365,6 +505,7 @@ async function loadCleaning() {
 
 async function markCleaned(id) {
   await api(`/cleaning/${id}`, { method: 'PATCH', body: JSON.stringify({ status: 'completed' }) });
+  showToast('Cleaning task completed');
   loadCleaning();
 }
 
@@ -372,6 +513,16 @@ async function markCleaned(id) {
 async function loadReviews() {
   const reviews = await api('/reviews');
   if (!reviews) return;
+
+  if (reviews.length === 0) {
+    document.getElementById('reviews-list').innerHTML = `
+      <div class="empty-state-inline" style="padding:48px">
+        <i data-lucide="star-off"></i>
+        <p>No reviews yet</p>
+      </div>`;
+    lucide.createIcons();
+    return;
+  }
 
   document.getElementById('reviews-list').innerHTML = reviews.map(r => `
     <div class="review-card">
