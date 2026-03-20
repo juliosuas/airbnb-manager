@@ -12,6 +12,33 @@ let calendarYear = new Date().getFullYear();
 let selectedReservationId = null;
 let allReservations = [];
 
+// --- Auth Gate: redirect to login if no token ---
+(async function checkAuth() {
+  if (!authToken) {
+    window.location.href = '/login';
+    return;
+  }
+  // Verify token is still valid
+  try {
+    const res = await fetch(`${API}/auth/me`, {
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    });
+    if (!res.ok) {
+      localStorage.removeItem('airbnb_manager_token');
+      localStorage.removeItem('airbnb_manager_user');
+      localStorage.removeItem('airbnb_manager_property_id');
+      window.location.href = '/login';
+      return;
+    }
+    const userData = await res.json();
+    currentUser = userData;
+    localStorage.setItem('airbnb_manager_user', JSON.stringify(currentUser));
+  } catch (e) {
+    // Network error — allow offline access with existing token
+    console.warn('Could not verify auth token:', e);
+  }
+})();
+
 // --- Init Lucide Icons ---
 document.addEventListener('DOMContentLoaded', () => {
   lucide.createIcons();
@@ -84,8 +111,13 @@ async function api(endpoint, options = {}) {
       ...options,
     });
     if (res.status === 401) {
-      // Token expired or invalid — clear and continue (legacy mode still works)
+      // Token expired or invalid — redirect to login
       console.warn('Auth token expired or invalid');
+      localStorage.removeItem('airbnb_manager_token');
+      localStorage.removeItem('airbnb_manager_user');
+      localStorage.removeItem('airbnb_manager_property_id');
+      window.location.href = '/login';
+      return null;
     }
     return await res.json();
   } catch (e) {
@@ -102,7 +134,7 @@ function logout() {
   authToken = null;
   currentUser = null;
   currentPropertyId = null;
-  window.location.href = '/landing';
+  window.location.href = '/login';
 }
 
 async function loadUserProperties() {

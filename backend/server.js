@@ -563,6 +563,7 @@ cron.schedule('0 8 * * *', () => {
 // ============================================
 
 // Serve specific HTML pages
+app.get('/login', (req, res) => res.sendFile(path.join(__dirname, '..', 'frontend', 'login.html')));
 app.get('/landing', (req, res) => res.sendFile(path.join(__dirname, '..', 'frontend', 'landing.html')));
 app.get('/onboarding', (req, res) => res.sendFile(path.join(__dirname, '..', 'frontend', 'onboarding.html')));
 
