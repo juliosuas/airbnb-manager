@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Airbnb Manager — Open Source Multi-Property Management Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --bg-card: #12121a;
+      --bg-section: #0e0e16;
+      --border: #2a2a3e;
+      --text: #e8e8f0;
+      --text-secondary: #8888a0;
+      --accent: #ff385c;
+      --accent-hover: #e0314f;
+      --accent-glow: rgba(255, 56, 92, 0.2);
+      --success: #00c48c;
+      --blue: #4f8cff;
+      --radius: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* Nav */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .nav-logo { font-size: 1.2rem; font-weight: 700; }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 22px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-outline:hover { border-color: var(--text-secondary); }
+    .btn-lg { padding: 14px 32px; font-size: 1rem; border-radius: 10px; }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 80px 24px 60px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: var(--accent-glow);
+      color: var(--accent);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 24px;
+      border: 1px solid rgba(255, 56, 92, 0.3);
+    }
+    .hero h1 {
+      font-size: 3.2rem;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -1.5px;
+      margin-bottom: 20px;
+    }
+    .hero h1 .gradient {
+      background: linear-gradient(135deg, var(--accent), #ff8a5c);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: 1.15rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto 32px;
+      line-height: 1.7;
+    }
+    .hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+    /* Features */
+    .section {
+      padding: 80px 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .section-title {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .section-title h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+    .section-title p {
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      transition: border-color 0.3s, transform 0.2s;
+    }
+    .feature-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .feature-icon {
+      font-size: 1.8rem;
+      margin-bottom: 14px;
+    }
+    .feature-card h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .feature-card p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    /* How It Works */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      counter-reset: step;
+    }
+    .step-item {
+      text-align: center;
+      counter-increment: step;
+    }
+    .step-number {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--accent-glow);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin: 0 auto 14px;
+      border: 1px solid rgba(255, 56, 92, 0.3);
+    }
+    .step-item h3 {
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+    }
+    .step-item p {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    /* Pricing */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .pricing-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      text-align: center;
+    }
+    .pricing-card.featured {
+      border-color: var(--accent);
+      box-shadow: 0 0 40px var(--accent-glow);
+      position: relative;
+    }
+    .pricing-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: white;
+      padding: 4px 16px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .pricing-card h3 { font-size: 1.1rem; margin-bottom: 8px; }
+    .pricing-price {
+      font-size: 2.4rem;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .pricing-price span { font-size: 1rem; color: var(--text-secondary); font-weight: 400; }
+    .pricing-period { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 20px; }
+    .pricing-features { list-style: none; text-align: left; margin-bottom: 24px; }
+    .pricing-features li {
+      padding: 6px 0;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    .pricing-features li::before {
+      content: '✓ ';
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    /* Differentiators */
+    .diff-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    .diff-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .diff-card .tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 3px 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    .tag-green { background: rgba(0, 196, 140, 0.15); color: var(--success); }
+    .tag-blue { background: rgba(79, 140, 255, 0.15); color: var(--blue); }
+    .tag-pink { background: var(--accent-glow); color: var(--accent); }
+    .diff-card h3 { font-size: 1rem; margin-bottom: 6px; }
+    .diff-card p { color: var(--text-secondary); font-size: 0.85rem; line-height: 1.6; }
+
+    /* CTA */
+    .cta-section {
+      text-align: center;
+      padding: 80px 24px;
+      background: linear-gradient(180deg, var(--bg) 0%, var(--bg-section) 100%);
+    }
+    .cta-section h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .cta-section p {
+      color: var(--text-secondary);
+      margin-bottom: 28px;
+      font-size: 1.05rem;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--text-secondary); text-decoration: none; }
+    footer a:hover { color: var(--text); }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2rem; }
+      .features-grid { grid-template-columns: 1fr; }
+      .steps-grid { grid-template-columns: 1fr 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .diff-grid { grid-template-columns: 1fr; }
+      nav { padding: 16px 20px; }
+      .nav-links a.hide-mobile { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">🏠 Airbnb <span>Manager</span></div>
+  <div class="nav-links">
+    <a href="#features" class="hide-mobile">Features</a>
+    <a href="#pricing" class="hide-mobile">Pricing</a>
+    <a href="https://github.com" target="_blank" class="hide-mobile">GitHub</a>
+    <a href="/" class="btn btn-outline">Sign In</a>
+    <a href="/onboarding" class="btn btn-primary">Get Started</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge">✨ Open Source · AI-Native · LatAm-First</div>
+  <h1>Manage all your <span class="gradient">Airbnb properties</span> from one dashboard</h1>
+  <p>The open-source property management platform built for hosts in Latin America. AI-powered responses, iCal sync, dynamic pricing — free for your first property.</p>
+  <div class="hero-cta">
+    <a href="/onboarding" class="btn btn-primary btn-lg">Start Free →</a>
+    <a href="https://github.com" target="_blank" class="btn btn-outline btn-lg">View on GitHub</a>
+  </div>
+</section>
+
+<section class="section" id="features">
+  <div class="section-title">
+    <h2>Everything you need to host professionally</h2>
+    <p>Stop juggling spreadsheets. Manage reservations, messages, pricing, and cleaning from one place.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">📅</div>
+      <h3>iCal Sync</h3>
+      <p>Import reservations directly from Airbnb, Booking.com, and VRBO via iCal URLs. No API keys needed.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🤖</div>
+      <h3>AI Guest Responses</h3>
+      <p>AI-powered message suggestions that learn your hosting style. Respond to guests in seconds, not minutes.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💰</div>
+      <h3>Dynamic Pricing</h3>
+      <p>Smart pricing engine with weekend multipliers, holiday premiums, and demand-based adjustments.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🏠</div>
+      <h3>Multi-Property</h3>
+      <p>Manage unlimited properties from a single dashboard. Switch between listings instantly.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🧹</div>
+      <h3>Cleaning Management</h3>
+      <p>Auto-schedule cleaning tasks on checkout. Track status and coordinate with your team.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⭐</div>
+      <h3>Review Tracking</h3>
+      <p>Monitor ratings, respond to reviews, and maintain your Superhost status across all properties.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-title">
+    <h2>Get started in 3 minutes</h2>
+    <p>No credit card. No complex setup. Just paste your Airbnb calendar link and go.</p>
+  </div>
+  <div class="steps-grid">
+    <div class="step-item">
+      <div class="step-number">1</div>
+      <h3>Create account</h3>
+      <p>Name, email, password. That's it.</p>
+    </div>
+    <div class="step-item">
+      <div class="step-number">2</div>
+      <h3>Add property</h3>
+      <p>Basic info about your listing.</p>
+    </div>
+    <div class="step-item">
+      <div class="step-number">3</div>
+      <h3>Connect calendar</h3>
+      <p>Paste your Airbnb iCal URL.</p>
+    </div>
+    <div class="step-item">
+      <div class="step-number">4</div>
+      <h3>Start managing</h3>
+      <p>Reservations sync automatically.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="pricing">
+  <div class="section-title">
+    <h2>Simple, honest pricing</h2>
+    <p>Free for 1 property. Affordable for more. No hidden fees, ever.</p>
+  </div>
+  <div class="pricing-grid">
+    <div class="pricing-card">
+      <h3>Starter</h3>
+      <div class="pricing-price">$0 <span>/ forever</span></div>
+      <div class="pricing-period">1 property included</div>
+      <ul class="pricing-features">
+        <li>Full dashboard</li>
+        <li>iCal sync</li>
+        <li>AI message suggestions</li>
+        <li>Dynamic pricing</li>
+        <li>Cleaning management</li>
+        <li>Review tracking</li>
+      </ul>
+      <a href="/onboarding" class="btn btn-outline" style="width:100%">Get Started Free</a>
+    </div>
+    <div class="pricing-card featured">
+      <div class="pricing-badge">Most Popular</div>
+      <h3>Pro</h3>
+      <div class="pricing-price">$15 <span>USD/mo</span></div>
+      <div class="pricing-period">Unlimited properties</div>
+      <ul class="pricing-features">
+        <li>Everything in Starter</li>
+        <li>Unlimited properties</li>
+        <li>Multi-platform sync</li>
+        <li>Team access</li>
+        <li>Advanced analytics</li>
+        <li>Priority support</li>
+        <li>WhatsApp notifications</li>
+      </ul>
+      <a href="/onboarding" class="btn btn-primary" style="width:100%">Start Free Trial</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-title">
+    <h2>Why hosts choose us</h2>
+  </div>
+  <div class="diff-grid">
+    <div class="diff-card">
+      <span class="tag tag-green">Open Source</span>
+      <h3>Your data, your control</h3>
+      <p>Self-host on your own server or use our cloud. No vendor lock-in. Inspect the code. Contribute features. The ONLY open-source Airbnb manager with a modern UI.</p>
+    </div>
+    <div class="diff-card">
+      <span class="tag tag-blue">AI-Native</span>
+      <h3>Built with AI from day one</h3>
+      <p>Not AI bolted on as an afterthought. Smart responses, intelligent pricing, automated workflows — AI is in the DNA of every feature.</p>
+    </div>
+    <div class="diff-card">
+      <span class="tag tag-pink">LatAm-First</span>
+      <h3>Made for Latin America</h3>
+      <p>Mexican holidays, MXN/BRL/COP support, Spanish UI, local payment methods. Finally, a tool that understands your market.</p>
+    </div>
+    <div class="diff-card">
+      <span class="tag tag-green">Affordable</span>
+      <h3>10x cheaper than competitors</h3>
+      <p>Hospitable: $40/mo. Guesty: $100+/mo. Us: Free for 1 property, $15/mo for unlimited. Professional tools shouldn't cost a fortune.</p>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <h2>Ready to manage like a pro?</h2>
+  <p>Join hosts across Mexico, Colombia, and Costa Rica who are saving hours every week.</p>
+  <a href="/onboarding" class="btn btn-primary btn-lg">Get Started Free →</a>
+</section>
+
+<footer>
+  <p>© 2026 Airbnb Manager. Open source under MIT License. <a href="https://github.com" target="_blank">GitHub</a></p>
+</footer>
+
+</body>
+</html>
