@@ -1,4 +1,9 @@
-const API = 'http://localhost:3001/api';
+const API = window.location.origin + '/api';
+
+// Auth state
+let authToken = localStorage.getItem('airbnb_manager_token');
+let currentUser = JSON.parse(localStorage.getItem('airbnb_manager_user') || 'null');
+let currentPropertyId = localStorage.getItem('airbnb_manager_property_id');
 
 // State
 let currentSection = 'dashboard';
@@ -14,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // --- Theme Toggle ---
 function initTheme() {
-  const saved = localStorage.getItem('casa-sol-theme');
+  const saved = localStorage.getItem('airbnb-manager-theme');
   if (saved) {
     document.documentElement.setAttribute('data-theme', saved);
   } else {
@@ -27,7 +32,7 @@ function toggleTheme() {
   const current = document.documentElement.getAttribute('data-theme');
   const next = current === 'dark' ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('casa-sol-theme', next);
+  localStorage.setItem('airbnb-manager-theme', next);
 }
 
 initTheme();
@@ -70,14 +75,51 @@ document.querySelectorAll('.nav-links li').forEach(li => {
 // --- API Helpers ---
 async function api(endpoint, options = {}) {
   try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (authToken) {
+      headers['Authorization'] = `Bearer ${authToken}`;
+    }
     const res = await fetch(`${API}${endpoint}`, {
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       ...options,
     });
+    if (res.status === 401) {
+      // Token expired or invalid — clear and continue (legacy mode still works)
+      console.warn('Auth token expired or invalid');
+    }
     return await res.json();
   } catch (e) {
     console.error('API Error:', e);
     return null;
+  }
+}
+
+// --- Auth Helpers ---
+function logout() {
+  localStorage.removeItem('airbnb_manager_token');
+  localStorage.removeItem('airbnb_manager_user');
+  localStorage.removeItem('airbnb_manager_property_id');
+  authToken = null;
+  currentUser = null;
+  currentPropertyId = null;
+  window.location.href = '/landing';
+}
+
+async function loadUserProperties() {
+  if (!authToken) return;
+  const properties = await api('/properties');
+  if (properties && properties.length > 0) {
+    // Set current property if not set
+    if (!currentPropertyId) {
+      currentPropertyId = properties[0].id;
+      localStorage.setItem('airbnb_manager_property_id', currentPropertyId);
+    }
+    // Update sidebar name
+    const current = properties.find(p => p.id == currentPropertyId) || properties[0];
+    const nameEl = document.getElementById('sidebar-property-name');
+    const mobileEl = document.getElementById('mobile-property-name');
+    if (nameEl) nameEl.textContent = current.name.length > 20 ? current.name.substring(0, 20) + '…' : current.name;
+    if (mobileEl) mobileEl.textContent = current.name.length > 15 ? current.name.substring(0, 15) + '…' : current.name;
   }
 }
 
@@ -544,4 +586,5 @@ function formatDate(dateStr) {
 }
 
 // --- Init ---
+loadUserProperties();
 loadDashboard();
