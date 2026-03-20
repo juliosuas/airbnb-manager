@@ -1,6 +1,7 @@
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 const Database = require('better-sqlite3');
 const path = require('path');
+const bcrypt = require('bcryptjs');
 const { initDatabase } = require('./init');
 
 const dbPath = process.env.DB_PATH || path.join(__dirname, 'airbnb.db');
@@ -13,10 +14,34 @@ db.exec(`
   DELETE FROM messages;
   DELETE FROM calendar;
   DELETE FROM reservations;
+  DELETE FROM properties;
+  DELETE FROM users;
   DELETE FROM property;
 `);
 
-// Property
+// Demo user
+const passwordHash = bcrypt.hashSync('demo1234', 10);
+const userResult = db.prepare(`
+  INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)
+`).run('Demo Host', 'demo@airbnbmanager.com', passwordHash);
+const userId = userResult.lastInsertRowid;
+
+// Property (new multi-tenant table)
+const propResult = db.prepare(`
+  INSERT INTO properties (user_id, name, address, description, amenities, house_rules, max_guests, bedrooms, bathrooms, base_price, currency, timezone)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+`).run(
+  userId,
+  'Casa Sol — Playa del Carmen',
+  'Calle 38 Norte, Playa del Carmen, Quintana Roo, Mexico',
+  'Beautiful modern apartment in the heart of Playa del Carmen. 2 blocks from the beach, walking distance to 5th Avenue. Fully equipped kitchen, fast WiFi, rooftop pool.',
+  JSON.stringify(['WiFi 200Mbps', 'Rooftop Pool', 'A/C', 'Full Kitchen', 'Smart TV', 'Washer', 'Beach Towels', 'Parking', 'Self Check-in', 'Coffee Maker']),
+  'No smoking indoors. No parties or events. Quiet hours 10pm-8am. Max 4 guests. No pets. Check-in after 3pm, check-out before 11am.',
+  4, 2, 1, 1500, 'MXN', 'America/Mexico_City'
+);
+const propertyId = propResult.lastInsertRowid;
+
+// Legacy property table (backward compat)
 db.prepare(`
   INSERT INTO property (name, address, description, amenities, house_rules, max_guests, bedrooms, bathrooms)
   VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -29,7 +54,7 @@ db.prepare(`
   4, 2, 1
 );
 
-// Reservations (mix of past, current, and future)
+// Reservations
 const reservations = [
   ['María García', 'maria.garcia@gmail.com', '2026-02-10', '2026-02-15', 'completed', 7500, 2],
   ['John Smith', 'john.smith@outlook.com', '2026-02-18', '2026-02-23', 'completed', 8200, 3],
@@ -44,12 +69,12 @@ const reservations = [
 ];
 
 const insertRes = db.prepare(`
-  INSERT INTO reservations (guest_name, guest_email, check_in, check_out, status, total_price, guests_count)
-  VALUES (?, ?, ?, ?, ?, ?, ?)
+  INSERT INTO reservations (property_id, guest_name, guest_email, check_in, check_out, status, total_price, guests_count)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 `);
 
 for (const r of reservations) {
-  insertRes.run(...r);
+  insertRes.run(propertyId, ...r);
 }
 
 // Messages
@@ -67,22 +92,22 @@ const messages = [
 ];
 
 const insertMsg = db.prepare(`
-  INSERT INTO messages (reservation_id, sender, content, is_ai_response)
-  VALUES (?, ?, ?, ?)
+  INSERT INTO messages (property_id, reservation_id, sender, content, is_ai_response)
+  VALUES (?, ?, ?, ?, ?)
 `);
 
 for (const m of messages) {
-  insertMsg.run(...m);
+  insertMsg.run(propertyId, ...m);
 }
 
 // Calendar — generate 90 days from today
 const insertCal = db.prepare(`
-  INSERT OR REPLACE INTO calendar (date, price, available, min_nights, notes)
-  VALUES (?, ?, ?, ?, ?)
+  INSERT OR REPLACE INTO calendar (property_id, date, price, available, min_nights, notes)
+  VALUES (?, ?, ?, ?, ?, ?)
 `);
 
 const basePrice = 1500;
-const today = new Date('2026-03-15');
+const today = new Date();
 
 for (let i = 0; i < 90; i++) {
   const d = new Date(today);
@@ -90,15 +115,14 @@ for (let i = 0; i < 90; i++) {
   const dateStr = d.toISOString().split('T')[0];
   const dayOfWeek = d.getDay();
   const isWeekend = dayOfWeek === 5 || dayOfWeek === 6;
-  const isHoliday = (d.getMonth() === 2 && d.getDate() === 21) || // Benito Juárez
-                    (d.getMonth() === 3 && d.getDate() >= 6 && d.getDate() <= 12); // Semana Santa
+  const isHoliday = (d.getMonth() === 2 && d.getDate() === 21) ||
+                    (d.getMonth() === 3 && d.getDate() >= 6 && d.getDate() <= 12);
 
   let price = basePrice;
   if (isWeekend) price *= 1.3;
   if (isHoliday) price *= 1.5;
-  price = Math.round(price / 50) * 50; // Round to nearest 50
+  price = Math.round(price / 50) * 50;
 
-  // Mark booked dates as unavailable
   let available = 1;
   for (const r of reservations) {
     if (r[4] !== 'cancelled' && dateStr >= r[2] && dateStr < r[3]) {
@@ -107,7 +131,7 @@ for (let i = 0; i < 90; i++) {
     }
   }
 
-  insertCal.run(dateStr, price, available, isHoliday ? 3 : isWeekend ? 2 : 1, null);
+  insertCal.run(propertyId, dateStr, price, available, isHoliday ? 3 : isWeekend ? 2 : 1, null);
 }
 
 // Reviews
@@ -120,12 +144,12 @@ const reviews = [
 ];
 
 const insertReview = db.prepare(`
-  INSERT INTO reviews (reservation_id, rating, comment, response)
-  VALUES (?, ?, ?, ?)
+  INSERT INTO reviews (property_id, reservation_id, rating, comment, response)
+  VALUES (?, ?, ?, ?, ?)
 `);
 
 for (const r of reviews) {
-  insertReview.run(...r);
+  insertReview.run(propertyId, ...r);
 }
 
 // Cleaning tasks
@@ -139,16 +163,17 @@ const cleaningTasks = [
 ];
 
 const insertClean = db.prepare(`
-  INSERT INTO cleaning_tasks (reservation_id, scheduled_date, status, cleaner_notes)
-  VALUES (?, ?, ?, ?)
+  INSERT INTO cleaning_tasks (property_id, reservation_id, scheduled_date, status, cleaner_notes)
+  VALUES (?, ?, ?, ?, ?)
 `);
 
 for (const c of cleaningTasks) {
-  insertClean.run(...c);
+  insertClean.run(propertyId, ...c);
 }
 
 console.log('Database seeded successfully!');
-console.log('  - 1 property');
+console.log(`  - 1 user (demo@airbnbmanager.com / demo1234)`);
+console.log(`  - 1 property (id: ${propertyId})`);
 console.log('  - 10 reservations');
 console.log('  - 10 messages');
 console.log('  - 90 calendar days');
