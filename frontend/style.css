@@ -1338,6 +1338,12 @@ h2 i {
   to { opacity: 0; transform: translateY(20px); }
 }
 
+.toast-error {
+  background: #dc3545;
+  color: white;
+  animation: toastIn 0.3s var(--ease-bounce), toastOut 0.3s 4.5s var(--ease) forwards;
+}
+
 /* ==========================================================================
    SCROLLBAR
    ========================================================================== */

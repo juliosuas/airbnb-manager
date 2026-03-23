@@ -111,7 +111,6 @@ async function api(endpoint, options = {}) {
       ...options,
     });
     if (res.status === 401) {
-      // Token expired or invalid — redirect to login
       console.warn('Auth token expired or invalid');
       localStorage.removeItem('airbnb_manager_token');
       localStorage.removeItem('airbnb_manager_user');
@@ -119,9 +118,19 @@ async function api(endpoint, options = {}) {
       window.location.href = '/login';
       return null;
     }
-    return await res.json();
+    if (res.status === 429) {
+      showToast('Too many requests. Please wait a moment.', 'error');
+      return null;
+    }
+    const data = await res.json();
+    if (!res.ok) {
+      showToast(data.error || `Request failed (${res.status})`, 'error');
+      return null;
+    }
+    return data;
   } catch (e) {
     console.error('API Error:', e);
+    showToast('Connection error. Check your network.', 'error');
     return null;
   }
 }
@@ -161,11 +170,11 @@ function showToast(message, type = 'success') {
   if (existing) existing.remove();
 
   const toast = document.createElement('div');
-  toast.className = 'toast';
+  toast.className = `toast toast-${type}`;
   const icon = type === 'success' ? '✓' : '✕';
   toast.innerHTML = `<span>${icon}</span> ${message}`;
   document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 3200);
+  setTimeout(() => toast.remove(), type === 'error' ? 5000 : 3200);
 }
 
 // --- Load Sections ---
