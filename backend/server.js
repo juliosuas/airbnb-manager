@@ -4,6 +4,10 @@ const cors = require('cors');
 const path = require('path');
 const cron = require('node-cron');
 const bcrypt = require('bcryptjs');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const pino = require('pino');
+const pinoHttp = require('pino-http');
 const Database = require('better-sqlite3');
 const { initDatabase } = require('./db/init');
 const { generateToken, requireAuth, optionalAuth } = require('./middleware/auth');
@@ -14,6 +18,14 @@ const { calculatePrice, calculateRangePrice } = require('./services/pricing-engi
 const { notify } = require('./services/notification');
 const { fetchAndParseICal, syncICalToDatabase, generateICalExport } = require('./services/ical');
 
+// Logger
+const logger = pino({
+  level: process.env.LOG_LEVEL || 'info',
+  transport: process.env.NODE_ENV !== 'production'
+    ? { target: 'pino/file', options: { destination: 1 } }
+    : undefined,
+});
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'db', 'airbnb.db');
@@ -21,19 +33,41 @@ const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'db', 'airbnb.db');
 // Initialize database
 const db = initDatabase(DB_PATH);
 
-// Middleware
+// Security middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:"],
+      connectSrc: ["'self'"],
+    },
+  },
+}));
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
+app.use(pinoHttp({ logger, autoLogging: { ignore: (req) => req.url === '/api/health' } }));
 app.use(sanitizeBody);
 app.use(validateIdParams);
 const FRONTEND_DIR = process.env.FRONTEND_DIR || path.join(__dirname, '..', 'frontend');
 app.use(express.static(FRONTEND_DIR));
 
+// Rate limiting for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // 20 attempts per window
+  message: { error: 'Too many attempts. Please try again in 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // ============================================
 // AUTH ROUTES (public)
 // ============================================
 
-app.post('/api/auth/register', (req, res) => {
+app.post('/api/auth/register', authLimiter, (req, res) => {
   const { name, email, password } = req.body;
   if (!name || !email || !password) {
     return res.status(400).json({ error: 'name, email, and password are required' });
@@ -62,7 +96,7 @@ app.post('/api/auth/register', (req, res) => {
   res.status(201).json({ user: { id: user.id, name: user.name, email: user.email }, token });
 });
 
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', authLimiter, (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'email and password are required' });
@@ -603,9 +637,10 @@ app.get('*', (req, res) => {
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`\n  🏠 Airbnb Manager v2.0 running at http://localhost:${PORT}`);
-  console.log(`  📊 Dashboard: http://localhost:${PORT}`);
-  console.log(`  🌐 Landing:   http://localhost:${PORT}/landing`);
-  console.log(`  🚀 Onboarding: http://localhost:${PORT}/onboarding`);
-  console.log(`  💾 Database: ${DB_PATH}\n`);
+  logger.info({ port: PORT, db: DB_PATH }, 'Airbnb Manager v2.0 started');
+  console.log(`\n  Airbnb Manager v2.0 running at http://localhost:${PORT}`);
+  console.log(`  Dashboard:  http://localhost:${PORT}`);
+  console.log(`  Landing:    http://localhost:${PORT}/landing`);
+  console.log(`  Onboarding: http://localhost:${PORT}/onboarding`);
+  console.log(`  Database:   ${DB_PATH}\n`);
 });

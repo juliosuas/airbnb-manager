@@ -4,11 +4,12 @@ function errorHandler(err, req, res, _next) {
   const status = err.status || err.statusCode || 500;
   const message = status === 500 ? 'Internal server error' : err.message;
 
-  // Log the error (will be replaced by structured logger in production)
+  // Use pino logger if available on the request (via pino-http), otherwise console
+  const log = req.log || console;
   if (status >= 500) {
-    console.error(`[ERROR] ${req.method} ${req.path}:`, err.stack || err.message);
+    log.error({ err, method: req.method, path: req.path }, 'Server error');
   } else {
-    console.warn(`[WARN] ${req.method} ${req.path}: ${err.message}`);
+    log.warn({ status, method: req.method, path: req.path }, err.message);
   }
 
   res.status(status).json({
