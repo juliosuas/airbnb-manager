@@ -337,7 +337,8 @@ app.post('/api/messages/send', optionalAuth, (req, res) => {
   let isAiResponse = 0;
 
   if (use_ai) {
-    const aiResult = generateResponse(content, reservation.guest_name, reservation);
+    const property = db.prepare('SELECT * FROM properties WHERE id = ?').get(reservation.property_id);
+    const aiResult = generateResponse(content, reservation.guest_name, reservation, property);
     responseContent = aiResult.response;
     isAiResponse = 1;
   }
@@ -357,7 +358,10 @@ app.post('/api/messages/suggest', optionalAuth, (req, res) => {
   const { reservation_id, message_content } = req.body;
   const reservation = db.prepare('SELECT * FROM reservations WHERE id = ?').get(reservation_id);
   const guestName = reservation ? reservation.guest_name : 'Guest';
-  const suggestions = getSuggestedResponses(message_content, guestName, reservation);
+  const property = reservation
+    ? db.prepare('SELECT * FROM properties WHERE id = ?').get(reservation.property_id)
+    : null;
+  const suggestions = getSuggestedResponses(message_content, guestName, reservation, property);
   res.json({ suggestions });
 });
 
