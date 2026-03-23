@@ -1,4 +1,4 @@
-# 🏠 Airbnb Manager
+# Airbnb Manager
 
 **Open-source, AI-native multi-property management platform for Airbnb hosts.**
 
@@ -14,15 +14,17 @@ Airbnb Manager is a self-hosted (or cloud) platform that helps Airbnb hosts mana
 
 ## Features
 
-- **🔐 Authentication** — JWT-based auth, bcrypt passwords, multi-user support
-- **🏠 Multi-Property** — Manage unlimited properties per account, each fully isolated
-- **📅 iCal Sync** — Import reservations from Airbnb, Booking.com, VRBO via iCal URLs. Export your calendar as .ics
-- **🤖 AI Responses** — Smart message suggestions for common guest questions (check-in, WiFi, restaurants, etc.)
-- **💰 Dynamic Pricing** — Weekend multipliers, Mexican holiday premiums, seasonal adjustments, long-stay discounts, demand-based pricing
-- **📊 Analytics** — Occupancy rate, revenue tracking, rating monitoring
-- **🧹 Cleaning Management** — Auto-scheduled tasks tied to checkouts with status tracking
-- **⭐ Review Tracking** — Monitor and respond to guest reviews
-- **📱 Responsive UI** — Dark/light themes, mobile-friendly, skeleton loading states
+- **Authentication** — JWT-based auth, bcrypt passwords, multi-user support
+- **Multi-Property** — Manage unlimited properties per account, each fully isolated
+- **iCal Sync** — Import reservations from Airbnb, Booking.com, VRBO via iCal URLs. Export your calendar as .ics
+- **AI Responses** — Smart message suggestions for common guest questions (check-in, WiFi, restaurants, etc.)
+- **Dynamic Pricing** — Weekend multipliers, Mexican holiday premiums, seasonal adjustments, long-stay discounts, demand-based pricing
+- **Analytics** — Occupancy rate, revenue tracking, rating monitoring
+- **Cleaning Management** — Auto-scheduled tasks tied to checkouts with status tracking
+- **Review Tracking** — Monitor and respond to guest reviews
+- **Responsive UI** — Dark/light themes, mobile-friendly, skeleton loading states
+- **Security** — Helmet.js headers, rate limiting on auth, input validation/sanitization
+- **Logging** — Structured logging with Pino
 
 ## Quick Start
 
@@ -34,21 +36,46 @@ cd airbnb-manager
 # Install dependencies
 cd backend && npm install
 
+# Configure environment
+cp .env.example .env
+# Edit .env — at minimum, set JWT_SECRET to a random string
+
 # Seed demo data (creates demo user: demo@airbnbmanager.com / demo1234)
 npm run seed
 
 # Start
 npm start
 # → http://localhost:3001
+```
 
-# Or use Make
-cd .. && make start
+Or use Make from the project root:
+
+```bash
+make start    # install + seed + start
+make dev      # install + seed + start with --watch
 ```
 
 Then visit:
 - **Landing page:** http://localhost:3001/landing
+- **Sign in:** http://localhost:3001/login
 - **Onboarding:** http://localhost:3001/onboarding
-- **Dashboard:** http://localhost:3001
+- **Dashboard:** http://localhost:3001 (requires login)
+
+**Demo credentials:** `demo@airbnbmanager.com` / `demo1234`
+
+## Docker
+
+```bash
+# Build and run
+docker compose up --build
+
+# Or with Make
+make docker
+```
+
+The Docker setup uses a multi-stage build with `node:20-alpine`. Database is persisted via volume mount at `./backend/db`.
+
+Set `JWT_SECRET` in your environment or `.env` file before running in production.
 
 ## Architecture
 
@@ -56,11 +83,12 @@ Then visit:
 backend/              Node.js + Express API (port 3001)
   ├── db/             SQLite database, schema, seed data
   │   └── schema.sql  Multi-tenant schema (users, properties, reservations...)
-  ├── middleware/      JWT auth middleware
+  ├── middleware/      Auth (JWT), error handling, input validation
   ├── services/       AI responder, pricing engine, iCal, notifications
   └── server.js       Main server with all routes
 frontend/             Vanilla HTML/CSS/JS (served by Express)
-  ├── index.html      Dashboard (existing, backward-compatible)
+  ├── index.html      Dashboard SPA
+  ├── login.html      Sign-in page
   ├── landing.html    Marketing / landing page
   ├── onboarding.html 4-step setup wizard
   ├── app.js          Dashboard logic
@@ -73,8 +101,8 @@ frontend/             Vanilla HTML/CSS/JS (served by Express)
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| POST | `/api/auth/register` | No | Create account |
-| POST | `/api/auth/login` | No | Login, get JWT |
+| POST | `/api/auth/register` | No | Create account (rate limited) |
+| POST | `/api/auth/login` | No | Login, get JWT (rate limited) |
 | GET | `/api/auth/me` | Yes | Current user info |
 
 ### Properties
@@ -126,17 +154,29 @@ All data is scoped per property:
 | GET | `/api/cleaning` | Cleaning tasks |
 | PATCH | `/api/cleaning/:id` | Update cleaning status |
 
-## iCal Sync — How It Works
+## Environment Variables
 
-Airbnb doesn't have a public API. Instead, hosts can export their calendar as an iCal (.ics) URL:
+Copy `backend/.env.example` to `backend/.env`:
 
-1. Go to **Airbnb → Your Listing → Availability → Calendar Sync**
-2. Click **Export Calendar** and copy the URL
-3. Add it to your property in Airbnb Manager
-4. We parse the iCal feed to extract reservations, blocked dates, and availability
-5. Sync runs on-demand or can be scheduled
+```env
+PORT=3001
+DB_PATH=./db/airbnb.db
 
-This is the same method used by Hospitable, Guesty, OwnerRez, and every other serious Airbnb management tool.
+# REQUIRED — change in production
+JWT_SECRET=change-me-to-a-random-secret-in-production
+JWT_EXPIRES_IN=7d
+
+# OpenAI (optional — for AI responses)
+OPENAI_API_KEY=
+
+# Pricing defaults
+BASE_PRICE=1500
+WEEKEND_MULTIPLIER=1.3
+CURRENCY=MXN
+
+# Notification webhook (optional)
+NOTIFICATION_WEBHOOK_URL=
+```
 
 ## Tech Stack
 
@@ -145,31 +185,21 @@ This is the same method used by Hospitable, Guesty, OwnerRez, and every other se
 | Backend | Node.js + Express |
 | Database | SQLite (WAL mode, better-sqlite3) |
 | Auth | JWT + bcrypt |
+| Security | helmet.js, express-rate-limit, input validation |
+| Logging | Pino (structured JSON) |
 | Frontend | Vanilla HTML/CSS/JS |
 | Icons | Lucide (CDN) |
 | Fonts | Inter (Google Fonts) |
 | iCal | Custom parser (no external deps) |
-
-## Environment Variables
-
-Copy `backend/.env.example` to `backend/.env`:
-
-```env
-PORT=3001
-DB_PATH=./db/airbnb.db
-JWT_SECRET=your-secret-key-change-in-production
-JWT_EXPIRES_IN=7d
-BASE_PRICE=1500
-CURRENCY=MXN
-WEEKEND_MULTIPLIER=1.3
-NOTIFICATION_WEBHOOK_URL=
-```
 
 ## Roadmap
 
 - [x] Multi-tenant auth + multi-property
 - [x] iCal import/export
 - [x] Landing page + onboarding
+- [x] Security hardening (helmet, rate limiting, validation)
+- [x] Structured logging
+- [x] Docker support
 - [ ] Real AI responses (OpenAI/Claude)
 - [ ] WhatsApp notifications
 - [ ] Dynamic pricing with ML
