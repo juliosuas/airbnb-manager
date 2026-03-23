@@ -1,4 +1,4 @@
-.PHONY: install seed start dev clean
+.PHONY: install seed start dev clean docker
 
 install:
 	cd backend && npm install
@@ -12,11 +12,11 @@ start: seed
 dev: seed
 	cd backend && node --watch server.js
 
-bridge:
-	cd ai && pip install -r requirements.txt && python bridge.py
-
 clean:
 	rm -f backend/db/airbnb.db
+
+docker:
+	docker compose up --build
 
 test:
 	curl -s http://localhost:3001/api/health | python3 -m json.tool

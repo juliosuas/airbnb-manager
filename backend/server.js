@@ -22,7 +22,8 @@ const db = initDatabase(DB_PATH);
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '..', 'frontend')));
+const FRONTEND_DIR = process.env.FRONTEND_DIR || path.join(__dirname, '..', 'frontend');
+app.use(express.static(FRONTEND_DIR));
 
 // ============================================
 // AUTH ROUTES (public)
@@ -563,14 +564,14 @@ cron.schedule('0 8 * * *', () => {
 // ============================================
 
 // Serve specific HTML pages
-app.get('/login', (req, res) => res.sendFile(path.join(__dirname, '..', 'frontend', 'login.html')));
-app.get('/landing', (req, res) => res.sendFile(path.join(__dirname, '..', 'frontend', 'landing.html')));
-app.get('/onboarding', (req, res) => res.sendFile(path.join(__dirname, '..', 'frontend', 'onboarding.html')));
+app.get('/login', (req, res) => res.sendFile(path.join(FRONTEND_DIR, 'login.html')));
+app.get('/landing', (req, res) => res.sendFile(path.join(FRONTEND_DIR, 'landing.html')));
+app.get('/onboarding', (req, res) => res.sendFile(path.join(FRONTEND_DIR, 'onboarding.html')));
 
 // Serve frontend for non-API routes
 app.get('*', (req, res) => {
   if (!req.path.startsWith('/api')) {
-    res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html'));
+    res.sendFile(path.join(FRONTEND_DIR, 'index.html'));
   }
 });
 

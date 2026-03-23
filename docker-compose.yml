@@ -7,16 +7,10 @@ services:
       - "3001:3001"
     volumes:
       - ./backend/db:/app/db
-      - ./frontend:/app/../frontend
+      - ./frontend:/frontend
     environment:
       - PORT=3001
       - DB_PATH=/app/db/airbnb.db
-    restart: unless-stopped
-
-  ai-bridge:
-    build: ./ai
-    ports:
-      - "5001:5001"
-    environment:
-      - BRIDGE_PORT=5001
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - FRONTEND_DIR=/frontend
     restart: unless-stopped
