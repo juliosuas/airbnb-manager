@@ -1,0 +1,30 @@
+{
+  "lastUpdated": "2026-03-23T05:00:00Z",
+  "calendar": {
+    "blockedDates": [],
+    "reservations": [
+      {
+        "guest": "Próxima reservación",
+        "checkIn": "2026-03-29",
+        "checkOut": "2026-04-02",
+        "nights": 4,
+        "status": "confirmed"
+      }
+    ],
+    "availableDaysThisMonth": 22,
+    "blockedDaysThisMonth": 9
+  },
+  "messages": {
+    "unread": 0,
+    "lastMessage": {
+      "from": "Sistema Airbnb",
+      "preview": "Tu calendario ha sido actualizado.",
+      "date": "2026-03-22T18:30:00Z"
+    }
+  },
+  "stats": {
+    "totalEarnings": 0,
+    "averageRating": 0,
+    "totalReviews": 0
+  }
+}

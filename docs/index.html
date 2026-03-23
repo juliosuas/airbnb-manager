@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Casa Diamante — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0e27;--bg2:#0f1535;--bg3:#151b3d;
+  --coral:#FF5A5F;--gold:#FFB400;--green:#00C851;--amber:#FFC107;
+  --text:#e8eaf6;--text2:#9ea7c7;--text3:#5a6380;
+  --glass:rgba(255,255,255,0.04);--glass-border:rgba(255,255,255,0.08);
+  --glass-hover:rgba(255,255,255,0.07);
+  --radius:16px;--radius-sm:10px;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100vh;line-height:1.6;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% -20%,rgba(255,90,95,0.08),transparent),
+    radial-gradient(ellipse 60% 40% at 80% 100%,rgba(255,180,0,0.05),transparent);
+}
+
+/* ── Header ── */
+.header{
+  padding:1.5rem 1.25rem;
+  display:flex;align-items:center;justify-content:space-between;
+  max-width:1200px;margin:0 auto;flex-wrap:wrap;gap:0.75rem;
+}
+.brand{display:flex;align-items:center;gap:0.75rem}
+.brand-icon{
+  width:44px;height:44px;border-radius:12px;
+  background:linear-gradient(135deg,var(--coral),#e04347);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;box-shadow:0 4px 20px rgba(255,90,95,0.3);
+}
+.brand h1{font-size:1.35rem;font-weight:700;letter-spacing:-0.02em}
+.brand small{font-size:0.72rem;color:var(--text2);font-weight:400;display:block;margin-top:1px}
+.powered{
+  font-size:0.65rem;color:var(--text3);
+  background:var(--glass);border:1px solid var(--glass-border);
+  padding:0.3rem 0.7rem;border-radius:20px;white-space:nowrap;
+  letter-spacing:0.04em;text-transform:uppercase;font-weight:500;
+}
+
+/* ── Grid ── */
+.dashboard{
+  max-width:1200px;margin:0 auto;padding:0 1.25rem 3rem;
+  display:grid;gap:1.25rem;
+  grid-template-columns:1fr;
+}
+@media(min-width:640px){.dashboard{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:960px){.dashboard{grid-template-columns:repeat(3,1fr)}}
+
+/* ── Card ── */
+.card{
+  background:var(--glass);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius);
+  padding:1.5rem;
+  transition:transform .25s ease,background .25s ease,box-shadow .25s ease;
+  position:relative;overflow:hidden;
+}
+.card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.02),transparent 60%);
+  pointer-events:none;
+}
+.card:hover{
+  transform:translateY(-3px);
+  background:var(--glass-hover);
+  box-shadow:0 8px 32px rgba(0,0,0,0.3);
+}
+.card-span2{grid-column:span 1}
+@media(min-width:640px){.card-span2{grid-column:span 2}}
+
+.card-header{
+  display:flex;align-items:center;gap:0.6rem;
+  margin-bottom:1.1rem;
+}
+.card-icon{
+  width:36px;height:36px;border-radius:var(--radius-sm);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;flex-shrink:0;
+}
+.card-icon.coral{background:rgba(255,90,95,0.15);color:var(--coral)}
+.card-icon.gold{background:rgba(255,180,0,0.15);color:var(--gold)}
+.card-icon.green{background:rgba(0,200,81,0.15);color:var(--green)}
+.card-icon.blue{background:rgba(59,130,246,0.15);color:#3b82f6}
+.card-icon.purple{background:rgba(139,92,246,0.15);color:#8b5cf6}
+.card-icon.teal{background:rgba(20,184,166,0.15);color:#14b8a6}
+
+.card-title{font-size:0.82rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text2)}
+
+/* ── Property Overview ── */
+.prop-name{font-size:1.15rem;font-weight:700;margin-bottom:0.25rem;line-height:1.3}
+.prop-address{font-size:0.78rem;color:var(--text2);margin-bottom:1rem;line-height:1.5}
+.prop-meta{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem}
+.meta-chip{
+  font-size:0.72rem;padding:0.3rem 0.65rem;border-radius:20px;
+  background:rgba(255,255,255,0.06);color:var(--text2);
+  border:1px solid rgba(255,255,255,0.06);
+  display:flex;align-items:center;gap:0.3rem;
+}
+.meta-chip .num{font-weight:600;color:var(--text)}
+.prop-host{
+  font-size:0.78rem;color:var(--text2);
+  padding-top:0.75rem;border-top:1px solid var(--glass-border);
+}
+.prop-host span{color:var(--gold);font-weight:600}
+.listing-id{font-size:0.68rem;color:var(--text3);margin-top:0.4rem;font-family:monospace}
+
+/* ── Pricing ── */
+.price-main{
+  display:flex;align-items:baseline;gap:0.4rem;margin-bottom:0.15rem;
+}
+.price-main .amount{font-size:1.6rem;font-weight:800;color:var(--coral)}
+.price-main .unit{font-size:0.78rem;color:var(--text2)}
+.price-smart{
+  font-size:0.68rem;color:var(--green);margin-bottom:1rem;
+  display:flex;align-items:center;gap:0.3rem;
+}
+.discounts{display:flex;gap:0.6rem;margin-bottom:1rem;flex-wrap:wrap}
+.discount-badge{
+  font-size:0.72rem;padding:0.3rem 0.65rem;border-radius:20px;
+  background:rgba(255,180,0,0.1);color:var(--gold);
+  border:1px solid rgba(255,180,0,0.15);font-weight:500;
+}
+.holiday-table{width:100%;font-size:0.74rem;border-collapse:collapse}
+.holiday-table th{
+  text-align:left;color:var(--text3);font-weight:500;
+  padding:0.4rem 0;border-bottom:1px solid var(--glass-border);
+  font-size:0.68rem;text-transform:uppercase;letter-spacing:0.05em;
+}
+.holiday-table td{
+  padding:0.45rem 0;border-bottom:1px solid rgba(255,255,255,0.03);
+  color:var(--text2);
+}
+.holiday-table td:nth-child(2){color:var(--text);font-weight:600;white-space:nowrap}
+.status-dot{
+  width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:0.3rem;
+}
+.status-dot.active{background:var(--green)}
+.status-dot.pending{background:var(--amber)}
+.min-stay{font-size:0.68rem;color:var(--text3);margin-top:0.75rem}
+
+/* ── Calendar ── */
+.cal-stats{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem}
+.cal-stat{
+  background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);
+  padding:0.85rem;text-align:center;
+}
+.cal-stat .num{font-size:1.5rem;font-weight:700}
+.cal-stat .num.avail{color:var(--green)}
+.cal-stat .num.blocked{color:var(--coral)}
+.cal-stat .label{font-size:0.68rem;color:var(--text3);margin-top:0.15rem}
+.next-res{
+  background:rgba(255,180,0,0.06);border:1px solid rgba(255,180,0,0.12);
+  border-radius:var(--radius-sm);padding:0.85rem;
+}
+.next-res-label{font-size:0.68rem;color:var(--gold);font-weight:600;margin-bottom:0.3rem;text-transform:uppercase;letter-spacing:0.05em}
+.next-res-detail{font-size:0.82rem;color:var(--text)}
+.next-res-dates{font-size:0.72rem;color:var(--text2);margin-top:0.2rem}
+.no-res{font-size:0.78rem;color:var(--text3);font-style:italic}
+
+/* ── Messages ── */
+.msg-count{
+  font-size:2.2rem;font-weight:800;color:var(--text);
+  margin-bottom:0.15rem;
+}
+.msg-label{font-size:0.72rem;color:var(--text3);margin-bottom:1rem}
+.msg-preview{
+  background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);
+  padding:0.85rem;
+}
+.msg-from{font-size:0.72rem;color:var(--gold);font-weight:600;margin-bottom:0.25rem}
+.msg-text{font-size:0.78rem;color:var(--text2);line-height:1.5}
+.msg-date{font-size:0.65rem;color:var(--text3);margin-top:0.35rem}
+
+/* ── Booking Settings ── */
+.settings-list{list-style:none}
+.settings-list li{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0.6rem 0;border-bottom:1px solid rgba(255,255,255,0.04);
+  font-size:0.8rem;
+}
+.settings-list li:last-child{border-bottom:none}
+.setting-label{color:var(--text2)}
+.setting-value{font-weight:600;color:var(--text)}
+.setting-value.on{color:var(--green)}
+.setting-value.flex{color:var(--gold)}
+
+/* ── Quick Actions ── */
+.actions-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem}
+.action-btn{
+  display:flex;align-items:center;justify-content:center;gap:0.5rem;
+  padding:0.75rem;border-radius:var(--radius-sm);
+  background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);
+  color:var(--text2);font-size:0.76rem;font-weight:500;
+  text-decoration:none;transition:all .2s ease;
+  font-family:inherit;cursor:pointer;
+}
+.action-btn:hover{
+  background:rgba(255,90,95,0.1);border-color:rgba(255,90,95,0.2);
+  color:var(--coral);transform:translateY(-2px);
+}
+.action-btn .icon{font-size:1rem}
+
+/* ── Footer ── */
+.footer{
+  text-align:center;padding:1.5rem 1.25rem 2.5rem;
+  font-size:0.68rem;color:var(--text3);
+  max-width:1200px;margin:0 auto;
+}
+.footer .update-time{color:var(--text2);font-weight:500}
+
+/* ── Loading ── */
+.loading-shimmer{
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.04) 50%,transparent 100%);
+  background-size:200% 100%;
+  animation:shimmer 1.5s ease infinite;
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.card{animation:fadeUp .5s ease backwards}
+.card:nth-child(1){animation-delay:.05s}
+.card:nth-child(2){animation-delay:.1s}
+.card:nth-child(3){animation-delay:.15s}
+.card:nth-child(4){animation-delay:.2s}
+.card:nth-child(5){animation-delay:.25s}
+.card:nth-child(6){animation-delay:.3s}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--glass-border);border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="brand">
+    <div class="brand-icon">💎</div>
+    <div>
+      <h1>Casa Diamante</h1>
+      <small>Panel de Administración</small>
+    </div>
+  </div>
+  <div class="powered">Powered by Jeffrey ⚡</div>
+</header>
+
+<!-- Dashboard Grid -->
+<main class="dashboard">
+
+  <!-- 1. Property Overview -->
+  <div class="card card-span2">
+    <div class="card-header">
+      <div class="card-icon coral">🏠</div>
+      <div class="card-title">Propiedad</div>
+    </div>
+    <div class="prop-name">Casa Diamante — Alberca Privada — Pet Friendly</div>
+    <div class="prop-address">📍 Morelos 81, La Poza, 39370 Acapulco de Juárez, Gro., México</div>
+    <div class="prop-meta">
+      <div class="meta-chip"><span class="num">6</span> huéspedes</div>
+      <div class="meta-chip"><span class="num">3</span> recámaras</div>
+      <div class="meta-chip"><span class="num">3</span> camas</div>
+      <div class="meta-chip"><span class="num">2.5</span> baños</div>
+    </div>
+    <div class="prop-host">Anfitriona: <span>Rocío</span> · Desde 2023</div>
+    <div class="listing-id">ID: 840626167478183381 · <a href="https://www.airbnb.com/rooms/840626167478183381" target="_blank" rel="noopener" style="color:var(--coral);text-decoration:none">Ver en Airbnb ↗</a></div>
+  </div>
+
+  <!-- 2. Pricing Strategy -->
+  <div class="card card-span2">
+    <div class="card-header">
+      <div class="card-icon gold">💰</div>
+      <div class="card-title">Estrategia de Precios</div>
+    </div>
+    <div class="price-main">
+      <span class="amount">$2,500 – $2,800</span>
+      <span class="unit">MXN / noche</span>
+    </div>
+    <div class="price-smart"><span class="status-dot active"></span>Smart Pricing activado</div>
+    <div class="discounts">
+      <span class="discount-badge">📅 Semanal: -20%</span>
+      <span class="discount-badge">🗓 Mensual: -30%</span>
+    </div>
+    <table class="holiday-table">
+      <thead>
+        <tr><th>Temporada</th><th>Precio/noche</th><th>Mín.</th><th>Estado</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Semana Santa (Mar 29 – Abr 12)</td>
+          <td>$4,500</td><td>2 noches</td>
+          <td><span class="status-dot active"></span>Activo</td>
+        </tr>
+        <tr>
+          <td>Puente de Mayo (May 1 – 4)</td>
+          <td>$3,800</td><td>2 noches</td>
+          <td><span class="status-dot active"></span>Activo</td>
+        </tr>
+        <tr>
+          <td>Independencia (Sep 12 – 16)</td>
+          <td>$4,000</td><td>2 noches</td>
+          <td><span class="status-dot pending"></span>Pendiente</td>
+        </tr>
+        <tr>
+          <td>Día de Muertos (Oct 31 – Nov 2)</td>
+          <td>$3,800</td><td>2 noches</td>
+          <td><span class="status-dot pending"></span>Pendiente</td>
+        </tr>
+        <tr>
+          <td>Navidad/Año Nuevo (Dic 20 – Ene 5)</td>
+          <td>$5,000</td><td>2 noches</td>
+          <td><span class="status-dot pending"></span>Pendiente</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="min-stay">Estancia mínima global: 1 noche</div>
+  </div>
+
+  <!-- 3. Calendar Status -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon green">📅</div>
+      <div class="card-title">Calendario — <span id="cal-month"></span></div>
+    </div>
+    <div class="cal-stats">
+      <div class="cal-stat">
+        <div class="num avail" id="cal-avail">—</div>
+        <div class="label">Disponibles</div>
+      </div>
+      <div class="cal-stat">
+        <div class="num blocked" id="cal-blocked">—</div>
+        <div class="label">Bloqueados</div>
+      </div>
+    </div>
+    <div id="next-res-container">
+      <div class="no-res">Cargando datos…</div>
+    </div>
+  </div>
+
+  <!-- 4. Messages -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon purple">💬</div>
+      <div class="card-title">Mensajes</div>
+    </div>
+    <div class="msg-count" id="msg-unread">—</div>
+    <div class="msg-label">mensajes sin leer</div>
+    <div id="msg-preview-container">
+      <div class="no-res">Cargando…</div>
+    </div>
+  </div>
+
+  <!-- 5. Booking Settings -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon blue">⚙️</div>
+      <div class="card-title">Configuración</div>
+    </div>
+    <ul class="settings-list">
+      <li>
+        <span class="setting-label">Reserva Instantánea</span>
+        <span class="setting-value on">● Activada</span>
+      </li>
+      <li>
+        <span class="setting-label">Cancelación</span>
+        <span class="setting-value flex">Flexible</span>
+      </li>
+      <li>
+        <span class="setting-label">Aviso previo</span>
+        <span class="setting-value">Mismo día (9 AM)</span>
+      </li>
+      <li>
+        <span class="setting-label">Ventana</span>
+        <span class="setting-value">12 meses</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- 6. Quick Actions -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon teal">🚀</div>
+      <div class="card-title">Acciones Rápidas</div>
+    </div>
+    <div class="actions-grid">
+      <a class="action-btn" href="https://www.airbnb.com/rooms/840626167478183381" target="_blank" rel="noopener">
+        <span class="icon">🏠</span> Listing
+      </a>
+      <a class="action-btn" href="https://www.airbnb.com/hosting" target="_blank" rel="noopener">
+        <span class="icon">📊</span> Dashboard
+      </a>
+      <a class="action-btn" href="https://www.airbnb.com/hosting/calendar" target="_blank" rel="noopener">
+        <span class="icon">📅</span> Calendario
+      </a>
+      <a class="action-btn" href="https://www.airbnb.com/hosting/inbox" target="_blank" rel="noopener">
+        <span class="icon">💬</span> Mensajes
+      </a>
+    </div>
+  </div>
+
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+  <div>Casa Diamante — Panel de Administración</div>
+  <div style="margin-top:0.35rem">Última actualización: <span class="update-time" id="last-updated">Desconocida</span></div>
+</footer>
+
+<script>
+(function(){
+  // Month names in Spanish
+  const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const now=new Date();
+  document.getElementById('cal-month').textContent=MONTHS[now.getMonth()]+' '+now.getFullYear();
+
+  function formatDate(iso){
+    if(!iso)return'—';
+    const d=new Date(iso);
+    return d.getDate()+' '+MONTHS[d.getMonth()].substring(0,3)+' '+d.getFullYear();
+  }
+  function timeAgo(iso){
+    if(!iso)return'';
+    const diff=Math.floor((now-new Date(iso))/1000);
+    if(diff<3600)return'Hace '+Math.floor(diff/60)+' min';
+    if(diff<86400)return'Hace '+Math.floor(diff/3600)+' h';
+    return'Hace '+Math.floor(diff/86400)+' días';
+  }
+
+  function applyData(data){
+    // Calendar
+    const cal=data.calendar||{};
+    document.getElementById('cal-avail').textContent=cal.availableDaysThisMonth??'—';
+    document.getElementById('cal-blocked').textContent=cal.blockedDaysThisMonth??'—';
+
+    const resContainer=document.getElementById('next-res-container');
+    const reservations=cal.reservations||[];
+    if(reservations.length>0){
+      const r=reservations[0];
+      resContainer.innerHTML=
+        '<div class="next-res">'+
+        '<div class="next-res-label">🔜 Próxima reservación</div>'+
+        '<div class="next-res-detail">'+(r.guest||'Huésped')+' · '+r.nights+' noches</div>'+
+        '<div class="next-res-dates">'+formatDate(r.checkIn)+' → '+formatDate(r.checkOut)+'</div>'+
+        '</div>';
+    }else{
+      resContainer.innerHTML='<div class="no-res">Sin reservaciones próximas</div>';
+    }
+
+    // Messages
+    const msg=data.messages||{};
+    document.getElementById('msg-unread').textContent=msg.unread??0;
+    const msgContainer=document.getElementById('msg-preview-container');
+    if(msg.lastMessage){
+      msgContainer.innerHTML=
+        '<div class="msg-preview">'+
+        '<div class="msg-from">'+msg.lastMessage.from+'</div>'+
+        '<div class="msg-text">'+msg.lastMessage.preview+'</div>'+
+        '<div class="msg-date">'+timeAgo(msg.lastMessage.date)+'</div>'+
+        '</div>';
+    }else{
+      msgContainer.innerHTML='<div class="no-res">Sin mensajes recientes</div>';
+    }
+
+    // Last updated
+    if(data.lastUpdated){
+      document.getElementById('last-updated').textContent=formatDate(data.lastUpdated)+' · '+timeAgo(data.lastUpdated);
+    }
+  }
+
+  // Default data if fetch fails
+  var defaultData={
+    lastUpdated:null,
+    calendar:{blockedDates:[],reservations:[],availableDaysThisMonth:0,blockedDaysThisMonth:0},
+    messages:{unread:0,lastMessage:null},
+    stats:{totalEarnings:0,averageRating:0,totalReviews:0}
+  };
+
+  fetch('data.json?_='+Date.now())
+    .then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})
+    .then(applyData)
+    .catch(function(){applyData(defaultData)});
+})();
+</script>
+</body>
+</html>
