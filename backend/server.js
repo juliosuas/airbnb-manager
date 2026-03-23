@@ -7,6 +7,8 @@ const bcrypt = require('bcryptjs');
 const Database = require('better-sqlite3');
 const { initDatabase } = require('./db/init');
 const { generateToken, requireAuth, optionalAuth } = require('./middleware/auth');
+const { errorHandler, asyncHandler } = require('./middleware/error-handler');
+const { validateIdParams, sanitizeBody, isValidEmail, isValidDate } = require('./middleware/validate');
 const { generateResponse, getSuggestedResponses } = require('./services/ai-responder');
 const { calculatePrice, calculateRangePrice } = require('./services/pricing-engine');
 const { notify } = require('./services/notification');
@@ -21,7 +23,9 @@ const db = initDatabase(DB_PATH);
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
+app.use(sanitizeBody);
+app.use(validateIdParams);
 const FRONTEND_DIR = process.env.FRONTEND_DIR || path.join(__dirname, '..', 'frontend');
 app.use(express.static(FRONTEND_DIR));
 
@@ -34,8 +38,14 @@ app.post('/api/auth/register', (req, res) => {
   if (!name || !email || !password) {
     return res.status(400).json({ error: 'name, email, and password are required' });
   }
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: 'Invalid email format' });
+  }
   if (password.length < 6) {
     return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  }
+  if (name.length > 100) {
+    return res.status(400).json({ error: 'Name must be 100 characters or less' });
   }
 
   const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email.toLowerCase());
@@ -56,6 +66,9 @@ app.post('/api/auth/login', (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'email and password are required' });
+  }
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: 'Invalid email format' });
   }
 
   const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email.toLowerCase());
@@ -423,6 +436,8 @@ function buildAnalytics(propertyId) {
 app.post('/api/pricing', optionalAuth, (req, res) => {
   const { start_date, end_date, price, min_nights, property_id } = req.body;
   if (!start_date || !end_date) return res.status(400).json({ error: 'start_date and end_date are required' });
+  if (!isValidDate(start_date) || !isValidDate(end_date)) return res.status(400).json({ error: 'Invalid date format (use YYYY-MM-DD)' });
+  if (start_date > end_date) return res.status(400).json({ error: 'start_date must be before end_date' });
 
   let query = 'UPDATE calendar SET price = COALESCE(?, price), min_nights = COALESCE(?, min_nights) WHERE date >= ? AND date <= ?';
   const params = [price, min_nights, start_date, end_date];
@@ -436,6 +451,7 @@ app.post('/api/pricing', optionalAuth, (req, res) => {
 app.get('/api/pricing/calculate', (req, res) => {
   const { start_date, end_date } = req.query;
   if (!start_date || !end_date) return res.status(400).json({ error: 'start_date and end_date are required' });
+  if (!isValidDate(start_date) || !isValidDate(end_date)) return res.status(400).json({ error: 'Invalid date format (use YYYY-MM-DD)' });
   res.json(calculateRangePrice(start_date, end_date));
 });
 
@@ -491,6 +507,10 @@ app.get('/api/cleaning', (req, res) => {
 
 app.patch('/api/cleaning/:id', optionalAuth, (req, res) => {
   const { status, cleaner_notes } = req.body;
+  const validStatuses = ['pending', 'in_progress', 'completed'];
+  if (status && !validStatuses.includes(status)) {
+    return res.status(400).json({ error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
+  }
   const result = db.prepare(`
     UPDATE cleaning_tasks SET status = COALESCE(?, status), cleaner_notes = COALESCE(?, cleaner_notes) WHERE id = ?
   `).run(status, cleaner_notes, req.params.id);
@@ -574,6 +594,9 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(FRONTEND_DIR, 'index.html'));
   }
 });
+
+// Global error handler (must be registered last)
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`\n  🏠 Airbnb Manager v2.0 running at http://localhost:${PORT}`);
