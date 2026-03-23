@@ -7,6 +7,18 @@ const { initDatabase } = require('./init');
 const dbPath = process.env.DB_PATH || path.join(__dirname, 'airbnb.db');
 const db = initDatabase(dbPath);
 
+// Helper: format date as YYYY-MM-DD
+function fmt(date) {
+  return date.toISOString().split('T')[0];
+}
+
+// Helper: create a date relative to today
+function daysFromNow(offset) {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return d;
+}
+
 // Clear existing data
 db.exec(`
   DELETE FROM cleaning_tasks;
@@ -54,18 +66,19 @@ db.prepare(`
   4, 2, 1
 );
 
-// Reservations
+// Reservations — dynamic dates relative to today
+// Past guests (completed), current/upcoming (confirmed), future (pending)
 const reservations = [
-  ['María García', 'maria.garcia@gmail.com', '2026-02-10', '2026-02-15', 'completed', 7500, 2],
-  ['John Smith', 'john.smith@outlook.com', '2026-02-18', '2026-02-23', 'completed', 8200, 3],
-  ['Sophie Müller', 'sophie.m@gmail.com', '2026-02-25', '2026-03-01', 'completed', 6800, 2],
-  ['Carlos Rodríguez', 'carlos.rod@yahoo.com', '2026-03-03', '2026-03-07', 'completed', 6000, 1],
-  ['Emma Johnson', 'emma.j@gmail.com', '2026-03-10', '2026-03-14', 'completed', 7200, 2],
-  ['Pierre Dubois', 'pierre.d@gmail.com', '2026-03-14', '2026-03-19', 'confirmed', 9500, 4],
-  ['Ana Martínez', 'ana.mtz@hotmail.com', '2026-03-22', '2026-03-27', 'confirmed', 8800, 2],
-  ['David Chen', 'david.chen@gmail.com', '2026-04-01', '2026-04-06', 'confirmed', 7500, 3],
-  ['Lisa Brown', 'lisa.b@gmail.com', '2026-04-10', '2026-04-15', 'pending', 8000, 2],
-  ['Roberto Sánchez', 'roberto.s@gmail.com', '2026-04-20', '2026-04-25', 'confirmed', 9200, 4],
+  ['María García',      'maria.garcia@gmail.com',   fmt(daysFromNow(-40)), fmt(daysFromNow(-35)), 'completed',  7500, 2],
+  ['John Smith',        'john.smith@outlook.com',    fmt(daysFromNow(-33)), fmt(daysFromNow(-28)), 'completed',  8200, 3],
+  ['Sophie Müller',     'sophie.m@gmail.com',        fmt(daysFromNow(-25)), fmt(daysFromNow(-21)), 'completed',  6800, 2],
+  ['Carlos Rodríguez',  'carlos.rod@yahoo.com',      fmt(daysFromNow(-18)), fmt(daysFromNow(-14)), 'completed',  6000, 1],
+  ['Emma Johnson',      'emma.j@gmail.com',          fmt(daysFromNow(-10)), fmt(daysFromNow(-6)),  'completed',  7200, 2],
+  ['Pierre Dubois',     'pierre.d@gmail.com',        fmt(daysFromNow(-3)),  fmt(daysFromNow(2)),   'confirmed',  9500, 4],
+  ['Ana Martínez',      'ana.mtz@hotmail.com',       fmt(daysFromNow(5)),   fmt(daysFromNow(10)),  'confirmed',  8800, 2],
+  ['David Chen',        'david.chen@gmail.com',      fmt(daysFromNow(14)),  fmt(daysFromNow(19)),  'confirmed',  7500, 3],
+  ['Lisa Brown',        'lisa.b@gmail.com',           fmt(daysFromNow(24)),  fmt(daysFromNow(29)),  'pending',    8000, 2],
+  ['Roberto Sánchez',   'roberto.s@gmail.com',       fmt(daysFromNow(34)),  fmt(daysFromNow(39)),  'confirmed',  9200, 4],
 ];
 
 const insertRes = db.prepare(`
@@ -86,7 +99,7 @@ const messages = [
   [7, 'guest', 'Hola! I\'m looking forward to our stay. Is there parking available?', 0],
   [7, 'host', 'Hola Ana! Yes, there\'s one parking spot included. I\'ll send you the details closer to your check-in date.', 0],
   [8, 'guest', 'Hi, can we bring a small dog? She\'s very well behaved.', 0],
-  [9, 'guest', 'Hello! Is early check-in possible on April 10th?', 0],
+  [9, 'guest', 'Hello! Is early check-in possible?', 0],
   [10, 'guest', 'Hi there! Can you recommend good restaurants nearby?', 0],
   [10, 'host', 'Absolutely Roberto! For Mexican food try La Perla on 5th Ave. For seafood, El Fogón is amazing. Both walking distance!', 0],
 ];
@@ -134,9 +147,9 @@ for (let i = 0; i < 90; i++) {
   insertCal.run(propertyId, dateStr, price, available, isHoliday ? 3 : isWeekend ? 2 : 1, null);
 }
 
-// Reviews
+// Reviews (tied to completed reservations)
 const reviews = [
-  [1, 5, 'Amazing place! Super clean, great location. Maria the host was very responsive.', 'Thank you María! So glad you enjoyed your stay. You\'re welcome back anytime!'],
+  [1, 5, 'Amazing place! Super clean, great location. The host was very responsive.', 'Thank you María! So glad you enjoyed your stay. You\'re welcome back anytime!'],
   [2, 4, 'Nice apartment, good location. AC worked great. Minor issue: hot water was slow in morning.', 'Thanks John! We\'ve since fixed the hot water heater. Hope to see you again!'],
   [3, 5, 'Perfekt! Alles war sauber und modern. Der Rooftop-Pool ist fantastisch.', 'Vielen Dank Sophie! We\'re happy you loved the rooftop pool!'],
   [4, 5, 'Excelente ubicación y muy limpio. El WiFi rápido fue perfecto para trabajar.', '¡Gracias Carlos! Nos encanta recibir nómadas digitales.'],
@@ -152,14 +165,14 @@ for (const r of reviews) {
   insertReview.run(propertyId, ...r);
 }
 
-// Cleaning tasks
+// Cleaning tasks — dynamic dates matching reservation check-outs
 const cleaningTasks = [
-  [5, '2026-03-14', 'completed', 'Deep clean done. Replaced towels and bed linens.'],
-  [6, '2026-03-19', 'pending', null],
-  [7, '2026-03-27', 'pending', null],
-  [8, '2026-04-06', 'pending', null],
-  [9, '2026-04-15', 'pending', null],
-  [10, '2026-04-25', 'pending', null],
+  [5, fmt(daysFromNow(-6)),  'completed', 'Deep clean done. Replaced towels and bed linens.'],
+  [6, fmt(daysFromNow(2)),   'pending', null],
+  [7, fmt(daysFromNow(10)),  'pending', null],
+  [8, fmt(daysFromNow(19)),  'pending', null],
+  [9, fmt(daysFromNow(29)),  'pending', null],
+  [10, fmt(daysFromNow(39)), 'pending', null],
 ];
 
 const insertClean = db.prepare(`
@@ -174,7 +187,7 @@ for (const c of cleaningTasks) {
 console.log('Database seeded successfully!');
 console.log(`  - 1 user (demo@airbnbmanager.com / demo1234)`);
 console.log(`  - 1 property (id: ${propertyId})`);
-console.log('  - 10 reservations');
+console.log('  - 10 reservations (dynamic dates relative to today)');
 console.log('  - 10 messages');
 console.log('  - 90 calendar days');
 console.log('  - 5 reviews');
