@@ -289,6 +289,12 @@
           <h1>Pricing Control</h1>
           <p class="section-subtitle">Set rates and calculate quotes</p>
         </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <!-- iCal Sync Button (NEW FEATURE) -->
+          <button id="ical-sync-btn" class="btn btn-primary" onclick="syncICal()" title="Sync iCal calendar from Airbnb">
+            🔄 Sync iCal
+          </button>
+        </div>
       </div>
       <div class="pricing-layout">
         <div class="card">
@@ -335,6 +341,26 @@
               <button type="submit" class="btn btn-full">Calculate</button>
             </form>
             <div id="calc-result" class="mt-1"></div>
+          </div>
+        </div>
+        <!-- Block Dates Card (NEW FEATURE) -->
+        <div class="card">
+          <div class="card-header">
+            <h2><i data-lucide="ban"></i> Block Dates</h2>
+          </div>
+          <div class="card-body">
+            <form id="block-form">
+              <div class="form-group">
+                <label>Start Date</label>
+                <input type="date" id="block-start" required>
+              </div>
+              <div class="form-group">
+                <label>End Date</label>
+                <input type="date" id="block-end" required>
+              </div>
+              <button type="submit" class="btn btn-full" style="background:var(--accent);color:white;border-color:var(--accent)">🚫 Block Dates</button>
+            </form>
+            <div id="block-result" class="mt-1"></div>
           </div>
         </div>
       </div>

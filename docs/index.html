@@ -27,6 +27,20 @@ body{
     radial-gradient(ellipse 60% 40% at 80% 100%,rgba(255,180,0,0.05),transparent);
 }
 
+/* ── Banner ── */
+.banner{
+  max-width:1200px;margin:0 auto;padding:0 1.25rem;
+}
+.banner-inner{
+  display:flex;align-items:center;gap:0.75rem;
+  background:linear-gradient(135deg,rgba(255,180,0,0.12),rgba(255,90,95,0.08));
+  border:1px solid rgba(255,180,0,0.2);border-radius:var(--radius);
+  padding:0.85rem 1.25rem;font-size:0.82rem;
+  animation:fadeUp .4s ease;
+}
+.banner-inner span{font-weight:700;color:var(--gold)}
+.banner-inner small{color:var(--text2);margin-left:auto}
+
 /* ── Header ── */
 .header{
   padding:1.5rem 1.25rem;
@@ -79,6 +93,8 @@ body{
 }
 .card-span2{grid-column:span 1}
 @media(min-width:640px){.card-span2{grid-column:span 2}}
+.card-span3{grid-column:span 1}
+@media(min-width:960px){.card-span3{grid-column:span 3}}
 
 .card-header{
   display:flex;align-items:center;gap:0.6rem;
@@ -95,7 +111,6 @@ body{
 .card-icon.blue{background:rgba(59,130,246,0.15);color:#3b82f6}
 .card-icon.purple{background:rgba(139,92,246,0.15);color:#8b5cf6}
 .card-icon.teal{background:rgba(20,184,166,0.15);color:#14b8a6}
-
 .card-title{font-size:0.82rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text2)}
 
 /* ── Property Overview ── */
@@ -117,15 +132,10 @@ body{
 .listing-id{font-size:0.68rem;color:var(--text3);margin-top:0.4rem;font-family:monospace}
 
 /* ── Pricing ── */
-.price-main{
-  display:flex;align-items:baseline;gap:0.4rem;margin-bottom:0.15rem;
-}
+.price-main{display:flex;align-items:baseline;gap:0.4rem;margin-bottom:0.15rem}
 .price-main .amount{font-size:1.6rem;font-weight:800;color:var(--coral)}
 .price-main .unit{font-size:0.78rem;color:var(--text2)}
-.price-smart{
-  font-size:0.68rem;color:var(--green);margin-bottom:1rem;
-  display:flex;align-items:center;gap:0.3rem;
-}
+.price-smart{font-size:0.68rem;color:var(--green);margin-bottom:1rem;display:flex;align-items:center;gap:0.3rem}
 .discounts{display:flex;gap:0.6rem;margin-bottom:1rem;flex-wrap:wrap}
 .discount-badge{
   font-size:0.72rem;padding:0.3rem 0.65rem;border-radius:20px;
@@ -139,46 +149,85 @@ body{
   font-size:0.68rem;text-transform:uppercase;letter-spacing:0.05em;
 }
 .holiday-table td{
-  padding:0.45rem 0;border-bottom:1px solid rgba(255,255,255,0.03);
-  color:var(--text2);
+  padding:0.45rem 0;border-bottom:1px solid rgba(255,255,255,0.03);color:var(--text2);
 }
 .holiday-table td:nth-child(2){color:var(--text);font-weight:600;white-space:nowrap}
-.status-dot{
-  width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:0.3rem;
-}
+.status-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:0.3rem}
 .status-dot.active{background:var(--green)}
 .status-dot.pending{background:var(--amber)}
 .min-stay{font-size:0.68rem;color:var(--text3);margin-top:0.75rem}
 
-/* ── Calendar ── */
+/* ── Calendar Stats ── */
 .cal-stats{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem}
-.cal-stat{
-  background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);
-  padding:0.85rem;text-align:center;
-}
+.cal-stat{background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);padding:0.85rem;text-align:center}
 .cal-stat .num{font-size:1.5rem;font-weight:700}
 .cal-stat .num.avail{color:var(--green)}
 .cal-stat .num.blocked{color:var(--coral)}
 .cal-stat .label{font-size:0.68rem;color:var(--text3);margin-top:0.15rem}
-.next-res{
-  background:rgba(255,180,0,0.06);border:1px solid rgba(255,180,0,0.12);
-  border-radius:var(--radius-sm);padding:0.85rem;
-}
+.next-res{background:rgba(255,180,0,0.06);border:1px solid rgba(255,180,0,0.12);border-radius:var(--radius-sm);padding:0.85rem}
 .next-res-label{font-size:0.68rem;color:var(--gold);font-weight:600;margin-bottom:0.3rem;text-transform:uppercase;letter-spacing:0.05em}
 .next-res-detail{font-size:0.82rem;color:var(--text)}
 .next-res-dates{font-size:0.72rem;color:var(--text2);margin-top:0.2rem}
 .no-res{font-size:0.78rem;color:var(--text3);font-style:italic}
 
+/* ── Mini Calendar ── */
+.mini-cal{width:100%}
+.mini-cal-header{
+  display:flex;justify-content:center;align-items:center;
+  font-size:0.8rem;font-weight:600;color:var(--text2);
+  margin-bottom:0.75rem;letter-spacing:0.04em;text-transform:uppercase;
+}
+.mini-cal-grid{
+  display:grid;grid-template-columns:repeat(7,1fr);gap:3px;
+}
+.mini-cal-day-name{
+  font-size:0.6rem;color:var(--text3);text-align:center;
+  padding:0.2rem 0;font-weight:600;letter-spacing:0.05em;
+}
+.mini-cal-day{
+  aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  border-radius:6px;font-size:0.68rem;font-weight:500;
+  cursor:default;transition:transform .15s ease;
+}
+.mini-cal-day.empty{background:transparent}
+.mini-cal-day.available{background:rgba(0,200,81,0.12);color:var(--green)}
+.mini-cal-day.blocked{background:rgba(255,90,95,0.15);color:var(--coral);font-weight:700}
+.mini-cal-day.today{
+  background:linear-gradient(135deg,var(--coral),#e04347);
+  color:white;font-weight:700;
+  box-shadow:0 2px 8px rgba(255,90,95,0.4);
+}
+.mini-cal-day.past{opacity:0.3}
+.mini-cal-legend{
+  display:flex;gap:1rem;margin-top:0.75rem;justify-content:center;
+}
+.mini-cal-legend-item{
+  display:flex;align-items:center;gap:0.35rem;
+  font-size:0.65rem;color:var(--text3);
+}
+.mini-cal-legend-dot{width:8px;height:8px;border-radius:2px}
+.mini-cal-legend-dot.available{background:rgba(0,200,81,0.5)}
+.mini-cal-legend-dot.blocked{background:rgba(255,90,95,0.5)}
+.mini-cal-legend-dot.today{background:var(--coral)}
+
+/* ── Revenue Card ── */
+.revenue-big{font-size:1.8rem;font-weight:800;color:var(--green);margin-bottom:0.2rem}
+.revenue-sub{font-size:0.72rem;color:var(--text3);margin-bottom:1rem}
+.revenue-breakdown{list-style:none}
+.revenue-breakdown li{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0.5rem 0;border-bottom:1px solid rgba(255,255,255,0.04);
+  font-size:0.78rem;
+}
+.revenue-breakdown li:last-child{border-bottom:none}
+.revenue-breakdown .label{color:var(--text2)}
+.revenue-breakdown .val{font-weight:600;color:var(--text)}
+.revenue-breakdown .val.highlight{color:var(--green)}
+
 /* ── Messages ── */
-.msg-count{
-  font-size:2.2rem;font-weight:800;color:var(--text);
-  margin-bottom:0.15rem;
-}
+.msg-count{font-size:2.2rem;font-weight:800;color:var(--text);margin-bottom:0.15rem}
 .msg-label{font-size:0.72rem;color:var(--text3);margin-bottom:1rem}
-.msg-preview{
-  background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);
-  padding:0.85rem;
-}
+.msg-preview{background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);padding:0.85rem}
 .msg-from{font-size:0.72rem;color:var(--gold);font-weight:600;margin-bottom:0.25rem}
 .msg-text{font-size:0.78rem;color:var(--text2);line-height:1.5}
 .msg-date{font-size:0.65rem;color:var(--text3);margin-top:0.35rem}
@@ -187,8 +236,7 @@ body{
 .settings-list{list-style:none}
 .settings-list li{
   display:flex;align-items:center;justify-content:space-between;
-  padding:0.6rem 0;border-bottom:1px solid rgba(255,255,255,0.04);
-  font-size:0.8rem;
+  padding:0.6rem 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.8rem;
 }
 .settings-list li:last-child{border-bottom:none}
 .setting-label{color:var(--text2)}
@@ -203,8 +251,7 @@ body{
   padding:0.75rem;border-radius:var(--radius-sm);
   background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);
   color:var(--text2);font-size:0.76rem;font-weight:500;
-  text-decoration:none;transition:all .2s ease;
-  font-family:inherit;cursor:pointer;
+  text-decoration:none;transition:all .2s ease;font-family:inherit;cursor:pointer;
 }
 .action-btn:hover{
   background:rgba(255,90,95,0.1);border-color:rgba(255,90,95,0.2);
@@ -215,17 +262,20 @@ body{
 /* ── Footer ── */
 .footer{
   text-align:center;padding:1.5rem 1.25rem 2.5rem;
-  font-size:0.68rem;color:var(--text3);
-  max-width:1200px;margin:0 auto;
+  font-size:0.68rem;color:var(--text3);max-width:1200px;margin:0 auto;
 }
 .footer .update-time{color:var(--text2);font-weight:500}
-
-/* ── Loading ── */
-.loading-shimmer{
-  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.04) 50%,transparent 100%);
-  background-size:200% 100%;
-  animation:shimmer 1.5s ease infinite;
+.refresh-indicator{
+  display:inline-flex;align-items:center;gap:0.3rem;
+  font-size:0.65rem;color:var(--text3);margin-top:0.35rem;
 }
+.refresh-dot{
+  width:5px;height:5px;border-radius:50%;background:var(--green);
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* ── Animations ── */
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 .card{animation:fadeUp .5s ease backwards}
@@ -235,6 +285,8 @@ body{
 .card:nth-child(4){animation-delay:.2s}
 .card:nth-child(5){animation-delay:.25s}
 .card:nth-child(6){animation-delay:.3s}
+.card:nth-child(7){animation-delay:.35s}
+.card:nth-child(8){animation-delay:.4s}
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar{width:6px}
@@ -243,6 +295,14 @@ body{
 </style>
 </head>
 <body>
+
+<!-- Semana Santa Banner (injected dynamically) -->
+<div class="banner" id="ss-banner" style="display:none;margin-top:1rem">
+  <div class="banner-inner">
+    <span id="ss-banner-text"></span>
+    <small id="ss-banner-sub"></small>
+  </div>
+</div>
 
 <!-- Header -->
 <header class="header">
@@ -332,7 +392,7 @@ body{
     <div class="min-stay">Estancia mínima global: 1 noche</div>
   </div>
 
-  <!-- 3. Calendar Status -->
+  <!-- 3. Calendar Stats + Mini Calendar -->
   <div class="card">
     <div class="card-header">
       <div class="card-icon green">📅</div>
@@ -353,7 +413,39 @@ body{
     </div>
   </div>
 
-  <!-- 4. Messages -->
+  <!-- 4. Mini Calendar Visual -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon coral">🗓</div>
+      <div class="card-title">Vista del Mes</div>
+    </div>
+    <div class="mini-cal">
+      <div class="mini-cal-header" id="mini-cal-title"></div>
+      <div class="mini-cal-grid" id="mini-cal-grid"></div>
+      <div class="mini-cal-legend">
+        <div class="mini-cal-legend-item"><div class="mini-cal-legend-dot available"></div> Libre</div>
+        <div class="mini-cal-legend-item"><div class="mini-cal-legend-dot blocked"></div> Bloqueado</div>
+        <div class="mini-cal-legend-item"><div class="mini-cal-legend-dot today"></div> Hoy</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Revenue Estimate -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon green">📈</div>
+      <div class="card-title">Ingreso Estimado</div>
+    </div>
+    <div class="revenue-big" id="revenue-total">$0</div>
+    <div class="revenue-sub">estimado este mes</div>
+    <ul class="revenue-breakdown" id="revenue-breakdown">
+      <li><span class="label">Días bloqueados</span><span class="val" id="rev-blocked-days">—</span></li>
+      <li><span class="label">Tarifa promedio</span><span class="val" id="rev-avg-rate">—</span></li>
+      <li><span class="label">Potencial libre</span><span class="val" id="rev-potential">—</span></li>
+    </ul>
+  </div>
+
+  <!-- 6. Messages -->
   <div class="card">
     <div class="card-header">
       <div class="card-icon purple">💬</div>
@@ -366,7 +458,7 @@ body{
     </div>
   </div>
 
-  <!-- 5. Booking Settings -->
+  <!-- 7. Booking Settings -->
   <div class="card">
     <div class="card-header">
       <div class="card-icon blue">⚙️</div>
@@ -392,7 +484,7 @@ body{
     </ul>
   </div>
 
-  <!-- 6. Quick Actions -->
+  <!-- 8. Quick Actions -->
   <div class="card">
     <div class="card-header">
       <div class="card-icon teal">🚀</div>
@@ -418,49 +510,150 @@ body{
 
 <!-- Footer -->
 <footer class="footer">
-  <div>Casa Diamante — Panel de Administración</div>
-  <div style="margin-top:0.35rem">Última actualización: <span class="update-time" id="last-updated">Desconocida</span></div>
+  <div>Casa Diamante — Panel de Administración v2</div>
+  <div style="margin-top:0.35rem">Última actualización: <span class="update-time" id="last-updated">Cargando…</span></div>
+  <div class="refresh-indicator"><div class="refresh-dot"></div> Auto-refresh cada 5 min</div>
 </footer>
 
 <script>
 (function(){
-  // Month names in Spanish
   const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const DAYS_SHORT=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
   const now=new Date();
+  const todayStr=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+
   document.getElementById('cal-month').textContent=MONTHS[now.getMonth()]+' '+now.getFullYear();
+
+  // FIX: parse date string manually to avoid timezone off-by-one
+  function parseDate(iso){
+    if(!iso)return null;
+    const parts=iso.split('-');
+    if(parts.length===3) return new Date(+parts[0], +parts[1]-1, +parts[2]);
+    // For ISO with time (lastUpdated), use native parse but show local date
+    return new Date(iso);
+  }
 
   function formatDate(iso){
     if(!iso)return'—';
-    const d=new Date(iso);
+    const d=parseDate(iso);
+    if(!d||isNaN(d))return'—';
     return d.getDate()+' '+MONTHS[d.getMonth()].substring(0,3)+' '+d.getFullYear();
   }
+
   function timeAgo(iso){
     if(!iso)return'';
     const diff=Math.floor((now-new Date(iso))/1000);
+    if(diff<60)return'Justo ahora';
     if(diff<3600)return'Hace '+Math.floor(diff/60)+' min';
-    if(diff<86400)return'Hace '+Math.floor(diff/3600)+' h';
+    if(diff<86400)return'Hace '+Math.floor(diff/3600)+'h';
     return'Hace '+Math.floor(diff/86400)+' días';
   }
 
+  // Semana Santa countdown
+  function checkSemanaSanta(){
+    const peak=new Date(2026,2,29); // Mar 29 2026
+    const end=new Date(2026,3,12);  // Apr 12 2026
+    const diff=Math.ceil((peak-now)/(1000*60*60*24));
+    const banner=document.getElementById('ss-banner');
+    if(!banner)return;
+    if(now>=peak && now<=end){
+      banner.style.display='block';
+      document.getElementById('ss-banner-text').textContent='🌊 Semana Santa en curso — Tarifas premium activas';
+      document.getElementById('ss-banner-sub').textContent='Hasta el 12 de Abril · $3,500–$4,500 MXN/noche';
+    } else if(diff>0 && diff<=30){
+      banner.style.display='block';
+      document.getElementById('ss-banner-text').textContent='⏳ Faltan '+diff+' días para Semana Santa';
+      document.getElementById('ss-banner-sub').textContent='Tarifas premium activadas · Mar 29 – Abr 12, 2026';
+    }
+  }
+
+  // Mini calendar
+  function renderMiniCalendar(blockedDates){
+    const title=document.getElementById('mini-cal-title');
+    const grid=document.getElementById('mini-cal-grid');
+    if(!title||!grid)return;
+    title.textContent=MONTHS[now.getMonth()]+' '+now.getFullYear();
+
+    // Build set of blocked day numbers this month
+    const blockedDays=new Set();
+    (blockedDates||[]).forEach(function(b){
+      const start=parseDate(b.start);
+      const end=parseDate(b.end);
+      if(!start||!end)return;
+      const d=new Date(start);
+      while(d<end){
+        if(d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth()){
+          blockedDays.add(d.getDate());
+        }
+        d.setDate(d.getDate()+1);
+      }
+    });
+
+    const firstDay=new Date(now.getFullYear(),now.getMonth(),1).getDay();
+    const daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+
+    let html=DAYS_SHORT.map(function(d){return'<div class="mini-cal-day-name">'+d+'</div>';}).join('');
+    for(let i=0;i<firstDay;i++) html+='<div class="mini-cal-day empty"></div>';
+    for(let d=1;d<=daysInMonth;d++){
+      const isPast=d<now.getDate();
+      const isToday=d===now.getDate();
+      const isBlocked=blockedDays.has(d);
+      let cls='mini-cal-day';
+      if(isToday) cls+=' today';
+      else if(isPast) cls+=' past';
+      else if(isBlocked) cls+=' blocked';
+      else cls+=' available';
+      html+='<div class="'+cls+'">'+d+'</div>';
+    }
+    grid.innerHTML=html;
+  }
+
+  // Revenue estimate
+  function updateRevenue(cal){
+    const blocked=cal.blockedDaysThisMonth||0;
+    // Semana Santa: avg $3,500 if within peak window, else base $2,650
+    const month=now.getMonth(); // 2=March, 3=April
+    const avgRate=(month===2||month===3)?3500:2650;
+    const potentialDays=(new Date(now.getFullYear(),now.getMonth()+1,0).getDate())-blocked;
+    const estimated=blocked*avgRate;
+    const potential=potentialDays*avgRate;
+
+    document.getElementById('revenue-total').textContent='$'+estimated.toLocaleString('es-MX')+' MXN';
+    document.getElementById('rev-blocked-days').textContent=blocked+' noches';
+    document.getElementById('rev-avg-rate').textContent='$'+avgRate.toLocaleString('es-MX')+'/noche';
+    document.getElementById('rev-potential').textContent='$'+potential.toLocaleString('es-MX')+' MXN';
+    // Color potential green if > 0
+    const potEl=document.getElementById('rev-potential');
+    if(potEl) potEl.classList.toggle('highlight',potential>0);
+  }
+
   function applyData(data){
-    // Calendar
     const cal=data.calendar||{};
     document.getElementById('cal-avail').textContent=cal.availableDaysThisMonth??'—';
     document.getElementById('cal-blocked').textContent=cal.blockedDaysThisMonth??'—';
 
+    // Next reservation
     const resContainer=document.getElementById('next-res-container');
     const reservations=cal.reservations||[];
     if(reservations.length>0){
       const r=reservations[0];
+      // FIX: replace "Airbnb (Not available)" with friendly text
+      const guestDisplay=(r.guest&&r.guest.toLowerCase().includes('not available'))?'Reservación confirmada':(r.guest||'Huésped');
       resContainer.innerHTML=
         '<div class="next-res">'+
         '<div class="next-res-label">🔜 Próxima reservación</div>'+
-        '<div class="next-res-detail">'+(r.guest||'Huésped')+' · '+r.nights+' noches</div>'+
+        '<div class="next-res-detail">'+guestDisplay+' · '+r.nights+' noches</div>'+
         '<div class="next-res-dates">'+formatDate(r.checkIn)+' → '+formatDate(r.checkOut)+'</div>'+
         '</div>';
     }else{
       resContainer.innerHTML='<div class="no-res">Sin reservaciones próximas</div>';
     }
+
+    // Mini calendar
+    renderMiniCalendar(cal.blockedDates);
+
+    // Revenue
+    updateRevenue(cal);
 
     // Messages
     const msg=data.messages||{};
@@ -477,13 +670,15 @@ body{
       msgContainer.innerHTML='<div class="no-res">Sin mensajes recientes</div>';
     }
 
-    // Last updated
+    // Last updated — FIX timezone display
     if(data.lastUpdated){
-      document.getElementById('last-updated').textContent=formatDate(data.lastUpdated)+' · '+timeAgo(data.lastUpdated);
+      const d=new Date(data.lastUpdated);
+      const localStr=d.toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric',timeZone:'America/Mexico_City'})
+        +' '+d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',timeZone:'America/Mexico_City'});
+      document.getElementById('last-updated').textContent=localStr+' · '+timeAgo(data.lastUpdated);
     }
   }
 
-  // Default data if fetch fails
   var defaultData={
     lastUpdated:null,
     calendar:{blockedDates:[],reservations:[],availableDaysThisMonth:0,blockedDaysThisMonth:0},
@@ -491,10 +686,20 @@ body{
     stats:{totalEarnings:0,averageRating:0,totalReviews:0}
   };
 
-  fetch('data.json?_='+Date.now())
-    .then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})
-    .then(applyData)
-    .catch(function(){applyData(defaultData)});
+  function loadData(){
+    fetch('data.json?_='+Date.now())
+      .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
+      .then(applyData)
+      .catch(function(){applyData(defaultData);});
+  }
+
+  // Init
+  checkSemanaSanta();
+  renderMiniCalendar([]); // render empty immediately, fill on data load
+  loadData();
+
+  // Auto-refresh every 5 minutes
+  setInterval(loadData, 5*60*1000);
 })();
 </script>
 </body>

@@ -11,12 +11,14 @@ let calendarMonth = new Date().getMonth();
 let calendarYear = new Date().getFullYear();
 let selectedReservationId = null;
 let allReservations = [];
+let _aiSuggestions = []; // FIX: store AI suggestions safely (XSS fix)
 
 // --- Auth Gate: redirect to login if no token ---
-(async function checkAuth() {
+// FIX: race condition — move loadUserProperties/loadDashboard inside auth promise chain
+async function checkAuth() {
   if (!authToken) {
     window.location.href = '/login';
-    return;
+    return false;
   }
   // Verify token is still valid
   try {
@@ -28,7 +30,7 @@ let allReservations = [];
       localStorage.removeItem('airbnb_manager_user');
       localStorage.removeItem('airbnb_manager_property_id');
       window.location.href = '/login';
-      return;
+      return false;
     }
     const userData = await res.json();
     currentUser = userData;
@@ -37,7 +39,8 @@ let allReservations = [];
     // Network error — allow offline access with existing token
     console.warn('Could not verify auth token:', e);
   }
-})();
+  return true;
+}
 
 // --- Init Lucide Icons ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -200,6 +203,11 @@ async function loadDashboard() {
     api('/cleaning'),
   ]);
 
+  // FIX: show error state if all critical data failed to load
+  if (!analytics && !property && !reservations) {
+    showToast('No se pudieron cargar los datos del dashboard', 'error');
+  }
+
   if (analytics) {
     animateValue('stat-occupancy', `${analytics.occupancy_rate}%`);
     animateValue('stat-revenue', `$${(analytics.monthly_revenue || 0).toLocaleString()} MXN`);
@@ -314,7 +322,7 @@ async function loadCalendar() {
     let cls = 'cal-day';
     if (isToday) cls += ' today';
     else if (isBooked) cls += ' booked';
-    else if (cal) cls += ' available';
+    else cls += ' available'; // FIX: show available state for ALL non-booked days
 
     html += `
       <div class="${cls}">
@@ -345,10 +353,13 @@ async function loadMessages() {
   const messages = await api('/messages');
   if (!messages) return;
 
-  // Group by reservation
+  // FIX: handle null reservation_id gracefully
   const convos = {};
   messages.forEach(m => {
-    if (!m.reservation_id) return;
+    if (!m.reservation_id) {
+      console.warn('Message has no reservation_id, skipping:', m.id);
+      return;
+    }
     if (!convos[m.reservation_id]) {
       convos[m.reservation_id] = { guest_name: m.guest_name, messages: [], hasUnread: false };
     }
@@ -418,8 +429,14 @@ document.getElementById('chat-input').addEventListener('keydown', e => { if (e.k
 
 async function sendMessage() {
   const input = document.getElementById('chat-input');
+  const btn = document.getElementById('chat-send');
   const content = input.value.trim();
   if (!content || !selectedReservationId) return;
+
+  // FIX: prevent double-send with loading state
+  if (btn.disabled) return;
+  btn.disabled = true;
+  btn.style.opacity = '0.5';
 
   input.value = '';
 
@@ -435,6 +452,10 @@ async function sendMessage() {
     method: 'POST',
     body: JSON.stringify({ reservation_id: selectedReservationId, content }),
   });
+
+  // Re-enable button
+  btn.disabled = false;
+  btn.style.opacity = '';
 
   if (result) {
     showToast('Message sent');
@@ -458,17 +479,24 @@ document.getElementById('chat-ai').addEventListener('click', async () => {
   });
 
   if (result && result.suggestions) {
+    // FIX: XSS fix — store suggestions in module-level array, use index in data attribute
+    _aiSuggestions = result.suggestions;
     const container = document.getElementById('ai-suggestions');
-    container.innerHTML = result.suggestions.map(s => `
-      <div class="ai-suggestion" data-content="${encodeURIComponent(s.response)}">
+    container.innerHTML = _aiSuggestions.map((s, idx) => `
+      <div class="ai-suggestion" data-idx="${idx}">
         <div class="ai-suggestion-label">AI Suggestion · ${s.templateKey}</div>
-        ${s.response.substring(0, 120)}...
+        <div class="ai-suggestion-text"></div>
       </div>
     `).join('');
 
+    // Safely set preview text using textContent (no XSS)
     container.querySelectorAll('.ai-suggestion').forEach(el => {
+      const idx = parseInt(el.dataset.idx, 10);
+      el.querySelector('.ai-suggestion-text').textContent =
+        _aiSuggestions[idx].response.substring(0, 120) + '...';
+
       el.addEventListener('click', async () => {
-        const content = decodeURIComponent(el.dataset.content);
+        const content = _aiSuggestions[idx].response;
         await api('/messages/send', {
           method: 'POST',
           body: JSON.stringify({ reservation_id: selectedReservationId, content, use_ai: false }),
@@ -554,6 +582,43 @@ document.getElementById('calc-form').addEventListener('submit', async (e) => {
   }
 });
 
+// --- Block Dates (NEW FEATURE) ---
+document.getElementById('block-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const result = await api('/pricing', {
+    method: 'POST',
+    body: JSON.stringify({
+      start_date: document.getElementById('block-start').value,
+      end_date: document.getElementById('block-end').value,
+      available: false,
+    }),
+  });
+  document.getElementById('block-result').innerHTML = result
+    ? `<div class="pricing-success">✓ Bloqueados ${result.updated} días</div>`
+    : '<div class="pricing-error">Error al bloquear fechas</div>';
+
+  if (result) {
+    showToast(`Blocked ${result.updated} days`);
+    // Refresh calendar if visible
+    if (currentSection === 'calendar') loadCalendar();
+  }
+});
+
+// --- iCal Sync (NEW FEATURE) ---
+async function syncICal() {
+  const btn = document.getElementById('ical-sync-btn');
+  if (!btn || btn.disabled) return;
+  btn.disabled = true;
+  btn.textContent = '⏳ Syncing…';
+  const result = await api('/properties/1/ical/sync', { method: 'POST' });
+  btn.disabled = false;
+  btn.textContent = '🔄 Sync iCal';
+  if (result) {
+    showToast('iCal synced successfully!');
+    if (currentSection === 'calendar') loadCalendar();
+  }
+}
+
 // --- Cleaning ---
 async function loadCleaning() {
   const tasks = await api('/cleaning');
@@ -620,12 +685,18 @@ async function loadReviews() {
 }
 
 // --- Helpers ---
+// FIX: use T00:00:00 instead of T12:00:00 to avoid off-by-one near midnight
 function formatDate(dateStr) {
   if (!dateStr) return '—';
-  const d = new Date(dateStr + 'T12:00:00');
+  const d = new Date(dateStr + 'T00:00:00');
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-// --- Init ---
-loadUserProperties();
-loadDashboard();
+// --- Init (runs after auth check) ---
+// FIX: wait for auth to resolve before calling init functions (race condition fix)
+checkAuth().then(ok => {
+  if (ok) {
+    loadUserProperties();
+    loadDashboard();
+  }
+});
