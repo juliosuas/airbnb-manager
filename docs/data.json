@@ -1,7 +1,12 @@
 {
-  "lastUpdated": "2026-03-31T14:00:00.721121Z",
+  "lastUpdated": "2026-03-31T17:00:01.374173Z",
   "calendar": {
     "blockedDates": [
+      {
+        "start": "2026-03-31",
+        "end": "2026-04-01",
+        "reason": "Airbnb (Not available)"
+      },
       {
         "start": "2027-03-31",
         "end": "2027-04-01",
@@ -11,14 +16,21 @@
     "reservations": [
       {
         "guest": "Airbnb (Not available)",
+        "checkIn": "2026-03-31",
+        "checkOut": "2026-04-01",
+        "nights": 1,
+        "status": "confirmed"
+      },
+      {
+        "guest": "Airbnb (Not available)",
         "checkIn": "2027-03-31",
         "checkOut": "2027-04-01",
         "nights": 1,
         "status": "confirmed"
       }
     ],
-    "availableDaysThisMonth": 31,
-    "blockedDaysThisMonth": 0
+    "availableDaysThisMonth": 30,
+    "blockedDaysThisMonth": 1
   },
   "messages": {
     "unread": 0,
