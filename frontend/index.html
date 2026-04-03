@@ -129,6 +129,59 @@
         </div>
       </div>
 
+      <!-- Pricing Intelligence Section -->
+      <div class="card pricing-intelligence-card" style="margin-bottom:1.5rem">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
+          <h2><i data-lucide="brain-circuit"></i> Pricing Intelligence</h2>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-size:0.85rem;color:var(--text-muted)">Dynamic Pricing</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="dynamic-pricing-toggle" onchange="toggleDynamicPricing(this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem">
+            <div style="background:var(--bg-secondary);border-radius:12px;padding:1.25rem;border:1px solid var(--border)">
+              <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:4px">Current Rate</div>
+              <div style="font-size:1.8rem;font-weight:800;color:var(--accent)" id="current-rate-display">$3,955 MXN</div>
+              <div style="font-size:0.8rem;color:var(--text-muted)">per night</div>
+            </div>
+            <div style="background:var(--bg-secondary);border-radius:12px;padding:1.25rem;border:1px solid var(--border)">
+              <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:4px">A/B Test Status</div>
+              <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+                <span id="arm-rule-badge" style="background:#dcfce7;color:#16a34a;padding:3px 10px;border-radius:20px;font-size:0.8rem;font-weight:600">rule_based ✓</span>
+                <span id="arm-ml-badge" style="background:#f0f9ff;color:#0284c7;padding:3px 10px;border-radius:20px;font-size:0.8rem;font-weight:600">ml_price</span>
+              </div>
+              <div style="font-size:0.75rem;color:var(--text-muted);margin-top:6px" id="bandit-status-text">Loading bandit...</div>
+            </div>
+            <div style="background:var(--bg-secondary);border-radius:12px;padding:1.25rem;border:1px solid var(--border)">
+              <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:4px">Active Arm</div>
+              <div style="font-size:1.1rem;font-weight:700;color:var(--text)" id="active-arm-display">—</div>
+              <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px" id="arm-confidence">Fetching recommendation...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Property Amenities (Residential Home) -->
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-header">
+          <h2><i data-lucide="home"></i> Casa Residencial — Acapulco Diamante</h2>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:1rem">
+            <span style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:0.9rem">🏊 Alberca privada</span>
+            <span style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:0.9rem">🏓 Cancha de paddle</span>
+            <span style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:0.9rem">🎉 Salón de fiestas</span>
+            <span style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:0.9rem">🔒 Seguridad privada 24/7</span>
+            <span style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:0.9rem">📍 Acapulco Diamante</span>
+          </div>
+          <p style="color:var(--text-muted);font-size:0.9rem">🏠 <strong>Casa residencial de uso turístico</strong> — propiedad privada, no oficina.</p>
+        </div>
+      </div>
+
       <div class="dashboard-grid">
         <div class="card">
           <div class="card-header">
@@ -406,5 +459,45 @@
   </main>
 
   <script src="app.js"></script>
+  <style>
+    .toggle-switch { position:relative;display:inline-block;width:44px;height:24px; }
+    .toggle-switch input { opacity:0;width:0;height:0; }
+    .toggle-slider { position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#cbd5e1;transition:.3s;border-radius:24px; }
+    .toggle-slider:before { position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:white;transition:.3s;border-radius:50%; }
+    input:checked + .toggle-slider { background:var(--accent); }
+    input:checked + .toggle-slider:before { transform:translateX(20px); }
+  </style>
+  <script>
+    async function loadBanditStatus() {
+      try {
+        const r = await fetch('/api/pricing/bandit');
+        const data = await r.json();
+        if (data.arms) {
+          const ruleArm = data.arms.find(a => a.id === 'rule_based');
+          const mlArm   = data.arms.find(a => a.id === 'ml_price');
+          const best = data.recommended_arm || (ruleArm && mlArm ? (mlArm.reward > ruleArm.reward ? 'ml_price' : 'rule_based') : 'rule_based');
+          document.getElementById('active-arm-display').textContent = best;
+          document.getElementById('arm-confidence').textContent =
+            `Pulls — rule_based: ${ruleArm ? ruleArm.pulls : 0} | ml_price: ${mlArm ? mlArm.pulls : 0}`;
+          document.getElementById('bandit-status-text').textContent =
+            `Bandit activo \u2022 ${data.arms.length} brazos \u2022 \u03b5=${data.epsilon ?? 0.1}`;
+          document.getElementById('arm-rule-badge').style.background = best === 'rule_based' ? '#dcfce7' : '#f1f5f9';
+          document.getElementById('arm-rule-badge').style.color = best === 'rule_based' ? '#16a34a' : '#64748b';
+          document.getElementById('arm-ml-badge').style.background = best === 'ml_price' ? '#dcfce7' : '#f0f9ff';
+          document.getElementById('arm-ml-badge').style.color = best === 'ml_price' ? '#16a34a' : '#0284c7';
+        }
+      } catch(e) {
+        document.getElementById('bandit-status-text').textContent = 'Bandit endpoint not reachable';
+      }
+    }
+    function toggleDynamicPricing(enabled) {
+      fetch('/api/pricing/bandit', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ dynamic_pricing: enabled }) })
+        .catch(() => {});
+      const rateEl = document.getElementById('current-rate-display');
+      rateEl.textContent = enabled ? 'Dinámico' : '$3,955 MXN';
+      rateEl.style.color = enabled ? '#f59e0b' : 'var(--accent)';
+    }
+    document.addEventListener('DOMContentLoaded', () => { loadBanditStatus(); });
+  </script>
 </body>
 </html>

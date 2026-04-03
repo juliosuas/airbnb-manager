@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@oraclaw/bandit": "^1.0.0",
+    "@oraclaw/cmaes": "^1.0.0"
+  }
+}

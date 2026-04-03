@@ -494,6 +494,63 @@ app.get('/api/pricing/calculate', (req, res) => {
 });
 
 // ============================================
+// PRICING INTELLIGENCE — A/B BANDIT
+// ============================================
+
+let banditState = {
+  epsilon: 0.1,
+  arms: [
+    { id: 'rule_based', label: 'Rule-Based Pricing', pulls: 0, reward: 0, avg_reward: 0 },
+    { id: 'ml_price',   label: 'ML Dynamic Pricing',  pulls: 0, reward: 0, avg_reward: 0 },
+  ],
+  dynamic_pricing_enabled: false,
+  recommended_arm: 'rule_based',
+  current_price_mxn: 3955,
+};
+
+function epsilonGreedySelect(arms, epsilon) {
+  if (Math.random() < epsilon) {
+    return arms[Math.floor(Math.random() * arms.length)].id;
+  }
+  return arms.reduce((best, arm) => arm.avg_reward > best.avg_reward ? arm : best, arms[0]).id;
+}
+
+app.get('/api/pricing/bandit', (req, res) => {
+  res.json({
+    ...banditState,
+    recommended_arm: epsilonGreedySelect(banditState.arms, banditState.epsilon),
+  });
+});
+
+app.post('/api/pricing/bandit', optionalAuth, (req, res) => {
+  const { dynamic_pricing, arm_id, reward } = req.body || {};
+
+  if (typeof dynamic_pricing === 'boolean') {
+    banditState.dynamic_pricing_enabled = dynamic_pricing;
+  }
+
+  // Record reward for an arm (reinforcement feedback)
+  if (arm_id && typeof reward === 'number') {
+    const arm = banditState.arms.find(a => a.id === arm_id);
+    if (arm) {
+      arm.pulls += 1;
+      arm.reward += reward;
+      arm.avg_reward = arm.reward / arm.pulls;
+    }
+  }
+
+  const recommended = epsilonGreedySelect(banditState.arms, banditState.epsilon);
+  banditState.recommended_arm = recommended;
+
+  res.json({
+    ok: true,
+    dynamic_pricing_enabled: banditState.dynamic_pricing_enabled,
+    recommended_arm: recommended,
+    arms: banditState.arms,
+  });
+});
+
+// ============================================
 // REVIEWS (scoped to property)
 // ============================================
 
