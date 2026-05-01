@@ -202,7 +202,7 @@
     <div class="login-card">
       <div class="error-msg" id="login-error"></div>
 
-      <form id="login-form" onsubmit="handleLogin(event)">
+      <form id="login-form">
         <div class="form-group">
           <label for="login-email">Email</label>
           <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" required>
@@ -299,6 +299,7 @@
       }
     }
 
+    document.getElementById('login-form').addEventListener('submit', handleLogin);
     // Focus email field on load
     document.getElementById('login-email').focus();
   </script>

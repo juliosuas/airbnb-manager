@@ -388,14 +388,15 @@ app.post('/api/messages/send', optionalAuth, (req, res) => {
   res.json({ id: result.lastInsertRowid, content: responseContent, is_ai_response: isAiResponse });
 });
 
-app.post('/api/messages/suggest', optionalAuth, (req, res) => {
+app.post('/api/messages/suggest', optionalAuth, async (req, res) => {
   const { reservation_id, message_content } = req.body;
   const reservation = db.prepare('SELECT * FROM reservations WHERE id = ?').get(reservation_id);
   const guestName = reservation ? reservation.guest_name : 'Guest';
   const property = reservation
     ? db.prepare('SELECT * FROM properties WHERE id = ?').get(reservation.property_id)
     : null;
-  const suggestions = getSuggestedResponses(message_content, guestName, reservation, property);
+
+  const suggestions = await getSuggestedResponses(message_content, guestName, reservation, property);
   res.json({ suggestions });
 });
 

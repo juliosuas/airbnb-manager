@@ -1,6 +1,58 @@
 // Template-based AI response generator
 // Templates use property data instead of hardcoded "Casa Sol" details
 
+async function callOpenAI(messageContent, guestName, reservation, property) {
+  if (!process.env.OPENAI_API_KEY) return null;
+
+  const propertyName = property ? property.name : 'the property';
+  const amenities = property && property.amenities
+    ? (typeof property.amenities === 'string' ? JSON.parse(property.amenities) : property.amenities)
+    : [];
+
+  const prompt = `
+You are an Airbnb host assistant.
+
+Guest name: ${guestName || 'Guest'}
+Property: ${propertyName}
+Amenities: ${amenities.join(', ') || 'Not provided'}
+Reservation: ${
+    reservation
+      ? `${reservation.check_in} to ${reservation.check_out}, status: ${reservation.status}`
+      : 'No reservation details provided'
+  }
+
+Guest message:
+"${messageContent}"
+
+Write a helpful, friendly, short response.
+Reply in the same language as the guest message.
+Do not invent property details.
+`;
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.4,
+      }),
+    });
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content?.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+
 function buildTemplates(property) {
   const name = property ? property.name : 'your property';
   const amenities = property && property.amenities
@@ -103,21 +155,32 @@ function matchTemplate(messageContent, templates) {
   return bestScore > 0 ? bestMatch : 'default';
 }
 
-function generateResponse(messageContent, guestName, reservation, property) {
+async function generateResponse(messageContent, guestName, reservation, property) {
+  const aiResponse = await callOpenAI(messageContent, guestName, reservation, property);
+
+  if (aiResponse) {
+    return {
+      templateKey: 'openai',
+      response: aiResponse,
+    };
+  }
+
   const templates = buildTemplates(property);
   const templateKey = matchTemplate(messageContent, templates);
   const template = templates[templateKey];
+
   return {
     templateKey,
     response: template.response(guestName || 'there', reservation),
   };
 }
 
-function getSuggestedResponses(messageContent, guestName, reservation, property) {
+async function getSuggestedResponses(messageContent, guestName, reservation, property) {
   const templates = buildTemplates(property);
-  const primary = generateResponse(messageContent, guestName, reservation, property);
+  const primary = await generateResponse(messageContent, guestName, reservation, property);
 
   const suggestions = [primary];
+
   if (primary.templateKey !== 'default') {
     suggestions.push({
       templateKey: 'default',

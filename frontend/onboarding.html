@@ -1,488 +1,645 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-theme="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Get Started — Airbnb Manager</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #0a0a0f;
-      --bg-card: #12121a;
-      --bg-input: #1a1a2e;
-      --border: #2a2a3e;
-      --text: #e8e8f0;
-      --text-secondary: #8888a0;
-      --accent: #ff385c;
-      --accent-hover: #e0314f;
-      --accent-glow: rgba(255, 56, 92, 0.15);
-      --success: #00c48c;
-      --radius: 12px;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Inter', -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .onboarding-container {
-      width: 100%;
-      max-width: 520px;
-      padding: 24px;
-    }
-
-    .logo {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-    .logo h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-    }
-    .logo span { color: var(--accent); }
-
-    /* Progress */
-    .progress-bar {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 32px;
-    }
-    .progress-step {
-      flex: 1;
-      height: 4px;
-      background: var(--border);
-      border-radius: 4px;
-      transition: background 0.4s;
-    }
-    .progress-step.active { background: var(--accent); }
-    .progress-step.completed { background: var(--success); }
-
-    .step-label {
-      text-align: center;
-      color: var(--text-secondary);
-      font-size: 0.85rem;
-      margin-bottom: 8px;
-    }
-
-    /* Card */
-    .step-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 32px;
-      display: none;
-    }
-    .step-card.active { display: block; }
-
-    .step-card h2 {
-      font-size: 1.4rem;
-      margin-bottom: 6px;
-      font-weight: 700;
-    }
-    .step-card p.subtitle {
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-      margin-bottom: 24px;
-      line-height: 1.5;
-    }
-
-    /* Form */
-    .form-group { margin-bottom: 18px; }
-    .form-group label {
-      display: block;
-      font-size: 0.85rem;
-      font-weight: 500;
-      margin-bottom: 6px;
-      color: var(--text-secondary);
-    }
-    .form-group input, .form-group textarea, .form-group select {
-      width: 100%;
-      padding: 12px 14px;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-size: 0.95rem;
-      font-family: inherit;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .form-group input:focus, .form-group textarea:focus {
-      border-color: var(--accent);
-    }
-    .form-group textarea { min-height: 80px; resize: vertical; }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    .form-row-3 {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 12px;
-    }
-
-    /* Buttons */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 12px 24px;
-      border: none;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: inherit;
-    }
-    .btn-primary {
-      background: var(--accent);
-      color: white;
-      width: 100%;
-    }
-    .btn-primary:hover { background: var(--accent-hover); }
-    .btn-primary:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    .btn-secondary {
-      background: transparent;
-      color: var(--text-secondary);
-      border: 1px solid var(--border);
-    }
-    .btn-secondary:hover { border-color: var(--text-secondary); }
-
-    .btn-row {
-      display: flex;
-      gap: 12px;
-      margin-top: 24px;
-    }
-    .btn-row .btn { flex: 1; }
-
-    /* Error */
-    .error-msg {
-      background: rgba(255, 56, 92, 0.1);
-      color: var(--accent);
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      margin-bottom: 16px;
-      display: none;
-    }
-    .error-msg.visible { display: block; }
-
-    /* Success state */
-    .success-card {
-      text-align: center;
-      padding: 48px 32px;
-    }
-    .success-icon {
-      font-size: 3rem;
-      margin-bottom: 16px;
-    }
-    .success-card h2 {
-      margin-bottom: 12px;
-    }
-    .success-card p {
-      color: var(--text-secondary);
-      margin-bottom: 24px;
-      line-height: 1.6;
-    }
-
-    /* iCal info box */
-    .info-box {
-      background: rgba(0, 196, 140, 0.08);
-      border: 1px solid rgba(0, 196, 140, 0.2);
-      border-radius: 8px;
-      padding: 14px;
-      margin-bottom: 18px;
-      font-size: 0.85rem;
-      line-height: 1.5;
-      color: var(--text-secondary);
-    }
-    .info-box strong { color: var(--success); }
-
-    .skip-link {
-      display: block;
-      text-align: center;
-      margin-top: 12px;
-      color: var(--text-secondary);
-      font-size: 0.85rem;
-      cursor: pointer;
-      text-decoration: underline;
-    }
-    .skip-link:hover { color: var(--text); }
-
-    @media (max-width: 540px) {
-      .onboarding-container { padding: 16px; }
-      .step-card { padding: 24px; }
-      .form-row, .form-row-3 { grid-template-columns: 1fr; }
-    }
-  </style>
-</head>
-<body>
-  <div class="onboarding-container">
-    <div class="logo">
-      <h1>🏠 Airbnb <span>Manager</span></h1>
-    </div>
-
-    <div class="progress-bar">
-      <div class="progress-step active" id="prog-1"></div>
-      <div class="progress-step" id="prog-2"></div>
-      <div class="progress-step" id="prog-3"></div>
-      <div class="progress-step" id="prog-4"></div>
-    </div>
-    <div class="step-label" id="step-label">Step 1 of 4</div>
-
-    <!-- Step 1: Create Account -->
-    <div class="step-card active" id="step-1">
-      <h2>Create your account</h2>
-      <p class="subtitle">Start managing your properties with AI-powered tools. Free for your first property.</p>
-      <div class="error-msg" id="error-1"></div>
-      <div class="form-group">
-        <label>Full name</label>
-        <input type="text" id="reg-name" placeholder="María García" autocomplete="name">
-      </div>
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="reg-email" placeholder="maria@example.com" autocomplete="email">
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="reg-password" placeholder="At least 6 characters" autocomplete="new-password">
-      </div>
-      <button class="btn btn-primary" onclick="registerAccount()">Create Account →</button>
-      <p style="text-align:center; margin-top:16px; font-size:0.85rem; color:var(--text-secondary)">
-        Already have an account? <a href="/login" style="color:var(--accent); text-decoration:none;">Sign in</a>
-      </p>
-    </div>
-
-    <!-- Step 2: Add Property -->
-    <div class="step-card" id="step-2">
-      <h2>Add your first property</h2>
-      <p class="subtitle">Tell us about your listing. You can always edit this later.</p>
-      <div class="error-msg" id="error-2"></div>
-      <div class="form-group">
-        <label>Property name</label>
-        <input type="text" id="prop-name" placeholder="My Beach House — Cancún">
-      </div>
-      <div class="form-group">
-        <label>Address</label>
-        <input type="text" id="prop-address" placeholder="Calle 38 Norte, Playa del Carmen, Mexico">
-      </div>
-      <div class="form-group">
-        <label>Description</label>
-        <textarea id="prop-description" placeholder="Beautiful modern apartment in the heart of..."></textarea>
-      </div>
-      <div class="form-row-3">
-        <div class="form-group">
-          <label>Bedrooms</label>
-          <input type="number" id="prop-bedrooms" value="1" min="1">
-        </div>
-        <div class="form-group">
-          <label>Bathrooms</label>
-          <input type="number" id="prop-bathrooms" value="1" min="1">
-        </div>
-        <div class="form-group">
-          <label>Max guests</label>
-          <input type="number" id="prop-max-guests" value="4" min="1">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Base price/night</label>
-          <input type="number" id="prop-price" value="1500" min="0">
-        </div>
-        <div class="form-group">
-          <label>Currency</label>
-          <select id="prop-currency">
-            <option value="MXN">MXN</option>
-            <option value="USD">USD</option>
-            <option value="EUR">EUR</option>
-            <option value="BRL">BRL</option>
-            <option value="COP">COP</option>
-          </select>
-        </div>
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
-        <button class="btn btn-primary" onclick="addProperty()">Add Property →</button>
-      </div>
-    </div>
-
-    <!-- Step 3: Connect Calendar -->
-    <div class="step-card" id="step-3">
-      <h2>Connect your Airbnb calendar</h2>
-      <p class="subtitle">Import your reservations automatically via iCal. This is how professional managers sync with Airbnb.</p>
-      <div class="info-box">
-        <strong>How to get your iCal URL:</strong><br>
-        1. Go to Airbnb → Your Listing → Availability → Calendar Sync<br>
-        2. Click "Export Calendar" and copy the .ics URL<br>
-        3. Paste it below — we'll sync your reservations automatically
-      </div>
-      <div class="error-msg" id="error-3"></div>
-      <div class="form-group">
-        <label>Airbnb iCal URL</label>
-        <input type="url" id="ical-url" placeholder="https://www.airbnb.com/calendar/ical/12345.ics?s=abc123">
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
-        <button class="btn btn-primary" onclick="connectCalendar()">Sync Calendar →</button>
-      </div>
-      <span class="skip-link" onclick="goToStep(4)">Skip for now — I'll add it later</span>
-    </div>
-
-    <!-- Step 4: Success -->
-    <div class="step-card" id="step-4">
-      <div class="success-card">
-        <div class="success-icon">🎉</div>
-        <h2>You're all set!</h2>
-        <p>Your property is ready to manage. Head to your dashboard to see reservations, messages, pricing, and more.</p>
-        <button class="btn btn-primary" onclick="goToDashboard()">Open Dashboard →</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const API = window.location.origin + '/api';
-    let currentStep = 1;
-    let authToken = null;
-    let propertyId = null;
-
-    // Check if already logged in
-    const savedToken = localStorage.getItem('airbnb_manager_token');
-    if (savedToken) {
-      authToken = savedToken;
-      // If they have a token, skip to step 2
-      // (they might be adding a new property)
-    }
-
-    function showError(step, msg) {
-      const el = document.getElementById(`error-${step}`);
-      el.textContent = msg;
-      el.classList.add('visible');
-    }
-
-    function clearError(step) {
-      const el = document.getElementById(`error-${step}`);
-      if (el) { el.textContent = ''; el.classList.remove('visible'); }
-    }
-
-    function goToStep(step) {
-      document.querySelectorAll('.step-card').forEach(c => c.classList.remove('active'));
-      document.getElementById(`step-${step}`).classList.add('active');
-
-      for (let i = 1; i <= 4; i++) {
-        const prog = document.getElementById(`prog-${i}`);
-        prog.classList.remove('active', 'completed');
-        if (i < step) prog.classList.add('completed');
-        else if (i === step) prog.classList.add('active');
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Get Started — Airbnb Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0a0a0f;
+        --bg-card: #12121a;
+        --bg-input: #1a1a2e;
+        --border: #2a2a3e;
+        --text: #e8e8f0;
+        --text-secondary: #8888a0;
+        --accent: #ff385c;
+        --accent-hover: #e0314f;
+        --accent-glow: rgba(255, 56, 92, 0.15);
+        --success: #00c48c;
+        --radius: 12px;
       }
 
-      document.getElementById('step-label').textContent = `Step ${step} of 4`;
-      currentStep = step;
-    }
-
-    async function registerAccount() {
-      clearError(1);
-      const name = document.getElementById('reg-name').value.trim();
-      const email = document.getElementById('reg-email').value.trim();
-      const password = document.getElementById('reg-password').value;
-
-      if (!name || !email || !password) return showError(1, 'All fields are required');
-      if (password.length < 6) return showError(1, 'Password must be at least 6 characters');
-
-      try {
-        const res = await fetch(`${API}/auth/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password }),
-        });
-        const data = await res.json();
-        if (!res.ok) return showError(1, data.error || 'Registration failed');
-
-        authToken = data.token;
-        localStorage.setItem('airbnb_manager_token', authToken);
-        localStorage.setItem('airbnb_manager_user', JSON.stringify(data.user));
-        goToStep(2);
-      } catch (e) {
-        showError(1, 'Network error. Please try again.');
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
-    }
-
-    async function addProperty() {
-      clearError(2);
-      const name = document.getElementById('prop-name').value.trim();
-      if (!name) return showError(2, 'Property name is required');
-
-      try {
-        const res = await fetch(`${API}/properties`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-          body: JSON.stringify({
-            name,
-            address: document.getElementById('prop-address').value.trim(),
-            description: document.getElementById('prop-description').value.trim(),
-            bedrooms: parseInt(document.getElementById('prop-bedrooms').value) || 1,
-            bathrooms: parseInt(document.getElementById('prop-bathrooms').value) || 1,
-            max_guests: parseInt(document.getElementById('prop-max-guests').value) || 4,
-            base_price: parseFloat(document.getElementById('prop-price').value) || 1500,
-            currency: document.getElementById('prop-currency').value,
-          }),
-        });
-        const data = await res.json();
-        if (!res.ok) return showError(2, data.error || 'Failed to add property');
-
-        propertyId = data.id;
-        localStorage.setItem('airbnb_manager_property_id', propertyId);
-        goToStep(3);
-      } catch (e) {
-        showError(2, 'Network error. Please try again.');
+      body {
+        font-family:
+          "Inter",
+          -apple-system,
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
-    }
 
-    async function connectCalendar() {
-      clearError(3);
-      const icalUrl = document.getElementById('ical-url').value.trim();
-      if (!icalUrl) return showError(3, 'Please paste your iCal URL');
-
-      try {
-        const res = await fetch(`${API}/properties/${propertyId}/ical/sync`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-          body: JSON.stringify({ ical_url: icalUrl }),
-        });
-        const data = await res.json();
-        if (!res.ok) return showError(3, data.error || 'Sync failed');
-
-        goToStep(4);
-      } catch (e) {
-        showError(3, 'Failed to sync. Check the URL and try again.');
+      .onboarding-container {
+        width: 100%;
+        max-width: 520px;
+        padding: 24px;
       }
-    }
 
-    function goToDashboard() {
-      window.location.href = '/';
-    }
-
-    // Enter key support
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        if (currentStep === 1) registerAccount();
-        else if (currentStep === 2) addProperty();
-        else if (currentStep === 3) connectCalendar();
+      .logo {
+        text-align: center;
+        margin-bottom: 32px;
       }
-    });
-  </script>
-</body>
+      .logo h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+      }
+      .logo span {
+        color: var(--accent);
+      }
+
+      /* Progress */
+      .progress-bar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 32px;
+      }
+      .progress-step {
+        flex: 1;
+        height: 4px;
+        background: var(--border);
+        border-radius: 4px;
+        transition: background 0.4s;
+      }
+      .progress-step.active {
+        background: var(--accent);
+      }
+      .progress-step.completed {
+        background: var(--success);
+      }
+
+      .step-label {
+        text-align: center;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+      }
+
+      /* Card */
+      .step-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 32px;
+        display: none;
+      }
+      .step-card.active {
+        display: block;
+      }
+
+      .step-card h2 {
+        font-size: 1.4rem;
+        margin-bottom: 6px;
+        font-weight: 700;
+      }
+      .step-card p.subtitle {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-bottom: 24px;
+        line-height: 1.5;
+      }
+
+      /* Form */
+      .form-group {
+        margin-bottom: 18px;
+      }
+      .form-group label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-bottom: 6px;
+        color: var(--text-secondary);
+      }
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        width: 100%;
+        padding: 12px 14px;
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-size: 0.95rem;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .form-group input:focus,
+      .form-group textarea:focus {
+        border-color: var(--accent);
+      }
+      .form-group textarea {
+        min-height: 80px;
+        resize: vertical;
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .form-row-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+      }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: inherit;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: white;
+        width: 100%;
+      }
+      .btn-primary:hover {
+        background: var(--accent-hover);
+      }
+      .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .btn-secondary {
+        background: transparent;
+        color: var(--text-secondary);
+        border: 1px solid var(--border);
+      }
+      .btn-secondary:hover {
+        border-color: var(--text-secondary);
+      }
+
+      .btn-row {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+      }
+      .btn-row .btn {
+        flex: 1;
+      }
+
+      /* Error */
+      .error-msg {
+        background: rgba(255, 56, 92, 0.1);
+        color: var(--accent);
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        margin-bottom: 16px;
+        display: none;
+      }
+      .error-msg.visible {
+        display: block;
+      }
+
+      /* Success state */
+      .success-card {
+        text-align: center;
+        padding: 48px 32px;
+      }
+      .success-icon {
+        font-size: 3rem;
+        margin-bottom: 16px;
+      }
+      .success-card h2 {
+        margin-bottom: 12px;
+      }
+      .success-card p {
+        color: var(--text-secondary);
+        margin-bottom: 24px;
+        line-height: 1.6;
+      }
+
+      /* iCal info box */
+      .info-box {
+        background: rgba(0, 196, 140, 0.08);
+        border: 1px solid rgba(0, 196, 140, 0.2);
+        border-radius: 8px;
+        padding: 14px;
+        margin-bottom: 18px;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        color: var(--text-secondary);
+      }
+      .info-box strong {
+        color: var(--success);
+      }
+
+      .skip-link {
+        display: block;
+        text-align: center;
+        margin-top: 12px;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        cursor: pointer;
+        text-decoration: underline;
+      }
+      .skip-link:hover {
+        color: var(--text);
+      }
+
+      @media (max-width: 540px) {
+        .onboarding-container {
+          padding: 16px;
+        }
+        .step-card {
+          padding: 24px;
+        }
+        .form-row,
+        .form-row-3 {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="onboarding-container">
+      <div class="logo">
+        <h1>🏠 Airbnb <span>Manager</span></h1>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-step active" id="prog-1"></div>
+        <div class="progress-step" id="prog-2"></div>
+        <div class="progress-step" id="prog-3"></div>
+        <div class="progress-step" id="prog-4"></div>
+      </div>
+      <div class="step-label" id="step-label">Step 1 of 4</div>
+
+      <!-- Step 1: Create Account -->
+      <div class="step-card active" id="step-1">
+        <h2>Create your account</h2>
+        <p class="subtitle">
+          Start managing your properties with AI-powered tools. Free for your
+          first property.
+        </p>
+        <div class="error-msg" id="error-1"></div>
+        <div class="form-group">
+          <label>Full name</label>
+          <input
+            type="text"
+            id="reg-name"
+            placeholder="María García"
+            autocomplete="name"
+          />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input
+            type="email"
+            id="reg-email"
+            placeholder="maria@example.com"
+            autocomplete="email"
+          />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input
+            type="password"
+            id="reg-password"
+            placeholder="At least 6 characters"
+            autocomplete="new-password"
+          />
+        </div>
+        <button class="btn btn-primary" id="register-btn">
+          Create Account →
+        </button>
+        <!-- <button class="btn btn-primary" onclick="registerAccount()">Create Account →</button> -->
+        <p
+          style="
+            text-align: center;
+            margin-top: 16px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+          "
+        >
+          Already have an account?
+          <a href="/login" style="color: var(--accent); text-decoration: none"
+            >Sign in</a
+          >
+        </p>
+      </div>
+
+      <!-- Step 2: Add Property -->
+      <div class="step-card" id="step-2">
+        <h2>Add your first property</h2>
+        <p class="subtitle">
+          Tell us about your listing. You can always edit this later.
+        </p>
+        <div class="error-msg" id="error-2"></div>
+        <div class="form-group">
+          <label>Property name</label>
+          <input
+            type="text"
+            id="prop-name"
+            placeholder="My Beach House — Cancún"
+          />
+        </div>
+        <div class="form-group">
+          <label>Address</label>
+          <input
+            type="text"
+            id="prop-address"
+            placeholder="Calle 38 Norte, Playa del Carmen, Mexico"
+          />
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea
+            id="prop-description"
+            placeholder="Beautiful modern apartment in the heart of..."
+          ></textarea>
+        </div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label>Bedrooms</label>
+            <input type="number" id="prop-bedrooms" value="1" min="1" />
+          </div>
+          <div class="form-group">
+            <label>Bathrooms</label>
+            <input type="number" id="prop-bathrooms" value="1" min="1" />
+          </div>
+          <div class="form-group">
+            <label>Max guests</label>
+            <input type="number" id="prop-max-guests" value="4" min="1" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Base price/night</label>
+            <input type="number" id="prop-price" value="1500" min="0" />
+          </div>
+          <div class="form-group">
+            <label>Currency</label>
+            <select id="prop-currency">
+              <option value="MXN">MXN</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+              <option value="BRL">BRL</option>
+              <option value="COP">COP</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <!-- <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+        <button class="btn btn-primary" onclick="addProperty()">Add Property →</button> -->
+          <button class="btn btn-secondary" id="back-step-1-btn">← Back</button>
+          <button class="btn btn-primary" id="add-property-btn">
+            Add Property →
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 3: Connect Calendar -->
+      <div class="step-card" id="step-3">
+        <h2>Connect your Airbnb calendar</h2>
+        <p class="subtitle">
+          Import your reservations automatically via iCal. This is how
+          professional managers sync with Airbnb.
+        </p>
+        <div class="info-box">
+          <strong>How to get your iCal URL:</strong><br />
+          1. Go to Airbnb → Your Listing → Availability → Calendar Sync<br />
+          2. Click "Export Calendar" and copy the .ics URL<br />
+          3. Paste it below — we'll sync your reservations automatically
+        </div>
+        <div class="error-msg" id="error-3"></div>
+        <div class="form-group">
+          <label>Airbnb iCal URL</label>
+          <input
+            type="url"
+            id="ical-url"
+            placeholder="https://www.airbnb.com/calendar/ical/12345.ics?s=abc123"
+          />
+        </div>
+        <div class="btn-row">
+          <!-- <button class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
+        <button class="btn btn-primary" onclick="connectCalendar()">Sync Calendar →</button> -->
+          <button class="btn btn-secondary" id="back-step-2-btn">← Back</button>
+          <button class="btn btn-primary" id="sync-calendar-btn">
+            Sync Calendar →
+          </button>
+        </div>
+        <span class="skip-link" id="skip-calendar-link"
+          >Skip for now — I'll add it later</span
+        >
+        <!-- <span class="skip-link" onclick="goToStep(4)">Skip for now — I'll add it later</span> -->
+      </div>
+
+      <!-- Step 4: Success -->
+      <div class="step-card" id="step-4">
+        <div class="success-card">
+          <div class="success-icon">🎉</div>
+          <h2>You're all set!</h2>
+          <p>
+            Your property is ready to manage. Head to your dashboard to see
+            reservations, messages, pricing, and more.
+          </p>
+          <!-- <button class="btn btn-primary" onclick="goToDashboard()">Open Dashboard →</button> -->
+          <button class="btn btn-primary" id="dashboard-btn">
+            Open Dashboard →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API = window.location.origin + "/api";
+      let currentStep = 1;
+      let authToken = null;
+      let propertyId = null;
+
+      // Check if already logged in
+      const savedToken = localStorage.getItem("airbnb_manager_token");
+      if (savedToken) {
+        authToken = savedToken;
+        // If they have a token, skip to step 2
+        // (they might be adding a new property)
+      }
+
+      function showError(step, msg) {
+        const el = document.getElementById(`error-${step}`);
+        el.textContent = msg;
+        el.classList.add("visible");
+      }
+
+      function clearError(step) {
+        const el = document.getElementById(`error-${step}`);
+        if (el) {
+          el.textContent = "";
+          el.classList.remove("visible");
+        }
+      }
+
+      function goToStep(step) {
+        document
+          .querySelectorAll(".step-card")
+          .forEach((c) => c.classList.remove("active"));
+        document.getElementById(`step-${step}`).classList.add("active");
+
+        for (let i = 1; i <= 4; i++) {
+          const prog = document.getElementById(`prog-${i}`);
+          prog.classList.remove("active", "completed");
+          if (i < step) prog.classList.add("completed");
+          else if (i === step) prog.classList.add("active");
+        }
+
+        document.getElementById("step-label").textContent = `Step ${step} of 4`;
+        currentStep = step;
+      }
+
+      async function registerAccount() {
+        clearError(1);
+        const name = document.getElementById("reg-name").value.trim();
+        const email = document.getElementById("reg-email").value.trim();
+        const password = document.getElementById("reg-password").value;
+
+        if (!name || !email || !password)
+          return showError(1, "All fields are required");
+        if (password.length < 6)
+          return showError(1, "Password must be at least 6 characters");
+
+        try {
+          const res = await fetch(`${API}/auth/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email, password }),
+          });
+          const data = await res.json();
+          if (!res.ok) return showError(1, data.error || "Registration failed");
+
+          authToken = data.token;
+          localStorage.setItem("airbnb_manager_token", authToken);
+          localStorage.setItem(
+            "airbnb_manager_user",
+            JSON.stringify(data.user),
+          );
+          goToStep(2);
+        } catch (e) {
+          showError(1, "Network error. Please try again.");
+        }
+      }
+
+      async function addProperty() {
+        clearError(2);
+        const name = document.getElementById("prop-name").value.trim();
+        if (!name) return showError(2, "Property name is required");
+
+        try {
+          const res = await fetch(`${API}/properties`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authToken}`,
+            },
+            body: JSON.stringify({
+              name,
+              address: document.getElementById("prop-address").value.trim(),
+              description: document
+                .getElementById("prop-description")
+                .value.trim(),
+              bedrooms:
+                parseInt(document.getElementById("prop-bedrooms").value) || 1,
+              bathrooms:
+                parseInt(document.getElementById("prop-bathrooms").value) || 1,
+              max_guests:
+                parseInt(document.getElementById("prop-max-guests").value) || 4,
+              base_price:
+                parseFloat(document.getElementById("prop-price").value) || 1500,
+              currency: document.getElementById("prop-currency").value,
+            }),
+          });
+          const data = await res.json();
+          if (!res.ok)
+            return showError(2, data.error || "Failed to add property");
+
+          propertyId = data.id;
+          localStorage.setItem("airbnb_manager_property_id", propertyId);
+          goToStep(3);
+        } catch (e) {
+          showError(2, "Network error. Please try again.");
+        }
+      }
+
+      async function connectCalendar() {
+        clearError(3);
+        const icalUrl = document.getElementById("ical-url").value.trim();
+        if (!icalUrl) return showError(3, "Please paste your iCal URL");
+
+        try {
+          const res = await fetch(`${API}/properties/${propertyId}/ical/sync`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authToken}`,
+            },
+            body: JSON.stringify({ ical_url: icalUrl }),
+          });
+          const data = await res.json();
+          if (!res.ok) return showError(3, data.error || "Sync failed");
+
+          goToStep(4);
+        } catch (e) {
+          showError(3, "Failed to sync. Check the URL and try again.");
+        }
+      }
+
+      function goToDashboard() {
+        window.location.href = "/";
+      }
+
+      // Enter key support
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          if (currentStep === 1) registerAccount();
+          else if (currentStep === 2) addProperty();
+          else if (currentStep === 3) connectCalendar();
+        }
+      });
+      document
+        .getElementById("register-btn")
+        .addEventListener("click", registerAccount);
+      document
+        .getElementById("back-step-1-btn")
+        .addEventListener("click", () => goToStep(1));
+      document
+        .getElementById("add-property-btn")
+        .addEventListener("click", addProperty);
+      document
+        .getElementById("back-step-2-btn")
+        .addEventListener("click", () => goToStep(2));
+      document
+        .getElementById("sync-calendar-btn")
+        .addEventListener("click", connectCalendar);
+      document
+        .getElementById("skip-calendar-link")
+        .addEventListener("click", () => goToStep(4));
+      document
+        .getElementById("dashboard-btn")
+        .addEventListener("click", goToDashboard);
+    </script>
+  </body>
 </html>
